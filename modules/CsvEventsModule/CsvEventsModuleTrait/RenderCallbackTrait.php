@@ -35,7 +35,7 @@ trait RenderCallbackTrait {
 	 */
 	public static function render_callback( $attrs, $content, $block, $elements ) {
 		// Enqueue frontend assets only when this module is on the page.
-		dcsve_enqueue_frontend_assets();
+		\dcsve_enqueue_frontend_assets();
 
 		// Get settings from attributes.
 		$csv_url    = $attrs['csvSource']['innerContent']['desktop']['value']['src'] ?? '';
