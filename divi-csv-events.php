@@ -72,10 +72,10 @@ function dcsve_enqueue_vb_scripts() {
 
 		\ET\Builder\VisualBuilder\Assets\PackageBuildManager::register_package_build(
 			[
-				'name'    => 'divi-csv-events-builder-vb-bundle-style',
+				'name'    => 'divi-csv-events-builder-bundle-style',
 				'version' => DCSVE_VERSION,
 				'style'   => [
-					'src'                => "{$plugin_dir_url}styles/vb-bundle.css",
+					'src'                => "{$plugin_dir_url}styles/bundle.css",
 					'deps'               => [],
 					'enqueue_top_window' => false,
 					'enqueue_app_window' => true,
