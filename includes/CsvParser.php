@@ -41,7 +41,7 @@ class CsvParser {
 	];
 
 	public static function parse( $csv_url, $period = 'year', $count = 0, $show_past = false, $period_count = 1 ) {
-		$result = self::load_csv( $csv_url );
+		$result = self::load_csv_cached( $csv_url );
 
 		// If load_csv returned an error, pass it through.
 		if ( isset( $result['error'] ) ) {
@@ -100,7 +100,8 @@ class CsvParser {
 	}
 
 	/**
-	 * Load and parse a CSV file.
+	 * Load CSV with transient caching (5 min TTL).
+	 * Cache key includes file modification time so edits invalidate immediately.
 	 *
 	 * @since 1.0.0
 	 *
@@ -108,18 +109,32 @@ class CsvParser {
 	 *
 	 * @return array Raw events array, sorted chronologically.
 	 */
-	private static function load_csv( $csv_url ) {
+	private static function load_csv_cached( $csv_url ) {
 		if ( empty( $csv_url ) ) {
 			return [];
 		}
 
-		// Try to resolve to a local file path for Media Library uploads.
 		$csv_path = self::resolve_local_path( $csv_url );
-
 		if ( ! $csv_path || ! file_exists( $csv_path ) ) {
 			return [];
 		}
 
+		$cache_key = 'dcsve_csv_' . md5( $csv_url . filemtime( $csv_path ) );
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$result = self::load_csv( $csv_path );
+		if ( ! isset( $result['error'] ) ) {
+			set_transient( $cache_key, $result, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return $result;
+	}
+
+	private static function load_csv( $csv_path ) {
 		$events = [];
 		$handle = fopen( $csv_path, 'r' );
 

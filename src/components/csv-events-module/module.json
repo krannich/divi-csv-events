@@ -215,8 +215,14 @@
                 "dynamicContent": false
               },
               "component": {
-                "name": "divi/text",
-                "type": "field"
+                "name": "divi/range",
+                "type": "field",
+                "props": {
+                  "min": 1,
+                  "max": 12,
+                  "step": 1,
+                  "defaultValue": "1"
+                }
               }
             },
             "count": {
@@ -233,8 +239,14 @@
                 "dynamicContent": false
               },
               "component": {
-                "name": "divi/text",
-                "type": "field"
+                "name": "divi/range",
+                "type": "field",
+                "props": {
+                  "min": 0,
+                  "max": 50,
+                  "step": 1,
+                  "defaultValue": "0"
+                }
               }
             },
             "showPast": {
@@ -256,7 +268,7 @@
               }
             },
             "view": {
-              "groupSlug": "contentEventSettings",
+              "groupSlug": "designEventDisplay",
               "priority": 40,
               "render": true,
               "subName": "view",
@@ -282,7 +294,7 @@
               }
             },
             "showFilter": {
-              "groupSlug": "contentEventSettings",
+              "groupSlug": "designEventDisplay",
               "priority": 50,
               "render": true,
               "subName": "showFilter",
@@ -300,7 +312,7 @@
               }
             },
             "showViewSwitcher": {
-              "groupSlug": "contentEventSettings",
+              "groupSlug": "designEventDisplay",
               "priority": 60,
               "render": true,
               "subName": "showViewSwitcher",
@@ -318,7 +330,7 @@
               }
             },
             "accentColor": {
-              "groupSlug": "contentEventSettings",
+              "groupSlug": "designEventDisplay",
               "priority": 70,
               "render": true,
               "subName": "accentColor",
@@ -380,6 +392,18 @@
           "name": "divi/composite",
           "props": {
             "groupLabel": "Elements"
+          }
+        }
+      },
+      "designEventDisplay": {
+        "panel": "design",
+        "priority": 5,
+        "groupName": "designEventDisplay",
+        "multiElements": true,
+        "component": {
+          "name": "divi/composite",
+          "props": {
+            "groupLabel": "Event Display"
           }
         }
       }

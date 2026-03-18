@@ -87,17 +87,28 @@ function dcsve_enqueue_vb_scripts() {
 add_action( 'divi_visual_builder_assets_before_enqueue_scripts', 'dcsve_enqueue_vb_scripts' );
 
 /**
- * Enqueue frontend styles.
+ * Register frontend assets (enqueued on demand from render_callback).
  *
  * @since 1.0.0
  */
-function dcsve_enqueue_frontend_scripts() {
+function dcsve_register_frontend_assets() {
 	$plugin_dir_url = plugin_dir_url( __FILE__ );
-	wp_enqueue_style( 'divi-csv-events-bundle-style', "{$plugin_dir_url}styles/bundle.css", array(), DCSVE_VERSION );
-	wp_enqueue_script( 'divi-csv-events-frontend', "{$plugin_dir_url}assets/js/frontend.js", array(), DCSVE_VERSION, true );
-	wp_localize_script( 'divi-csv-events-frontend', 'dcsveRestUrl', esc_url_raw( rest_url() ) );
+	wp_register_style( 'divi-csv-events-bundle-style', "{$plugin_dir_url}styles/bundle.css", array(), DCSVE_VERSION );
+	wp_register_script( 'divi-csv-events-frontend', "{$plugin_dir_url}assets/js/frontend.js", array(), DCSVE_VERSION, true );
+	wp_add_inline_script( 'divi-csv-events-frontend', 'var dcsveRestUrl = ' . wp_json_encode( esc_url_raw( rest_url() ) ) . ';', 'before' );
 }
-add_action( 'wp_enqueue_scripts', 'dcsve_enqueue_frontend_scripts' );
+add_action( 'wp_enqueue_scripts', 'dcsve_register_frontend_assets' );
+
+/**
+ * Enqueue frontend assets. Called from the module's render_callback.
+ *
+ * @since 1.0.0
+ */
+function dcsve_enqueue_frontend_assets() {
+	wp_enqueue_style( 'divi-csv-events-bundle-style' );
+	wp_enqueue_script( 'divi-csv-events-frontend' );
+}
+
 
 /**
  * Allow CSV uploads in WordPress Media Library.

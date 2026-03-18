@@ -113,11 +113,11 @@ const TableView = ({ events }: { events: CsvEvent[] }): ReactElement => {
         <table className="dcsve_csv_events__table">
           <thead>
             <tr>
-              <th>Datum</th>
-              <th>Uhrzeit</th>
-              <th>Veranstaltung</th>
-              <th>Ort</th>
-              <th>Details</th>
+              <th>{__('Datum', 'divi-csv-events')}</th>
+              <th>{__('Uhrzeit', 'divi-csv-events')}</th>
+              <th>{__('Veranstaltung', 'divi-csv-events')}</th>
+              <th>{__('Ort', 'divi-csv-events')}</th>
+              <th>{__('Details', 'divi-csv-events')}</th>
             </tr>
           </thead>
           <tbody>
@@ -214,13 +214,6 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
   const showViewSwitcher = isOn(settings.showViewSwitcher, true);
   const accentColor = settings.accentColor || '#2e7d32';
 
-  // Debug: log attrs to console so we can see what Divi provides.
-  console.log('[DCSVE] attrs.csvSource:', JSON.stringify(attrs?.csvSource));
-  console.log('[DCSVE] attrs.eventSettings:', JSON.stringify(attrs?.eventSettings));
-  console.log('[DCSVE] csvSrc:', csvSrc);
-  console.log('[DCSVE] settings:', settings);
-  console.log('[DCSVE] showViewSwitcher:', showViewSwitcher, 'view:', view);
-
   const fetchAbortRef = useRef<AbortController>();
 
   // Fetch events using native fetch (bypasses potential useFetch issues in VB iframe).
@@ -253,8 +246,6 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
 
     const restUrl = wpApiSettings.root + 'divi-csv-events/v1/events?' + params.toString();
 
-    console.log('[DCSVE] Fetching:', restUrl);
-
     fetch(restUrl, {
       method: 'GET',
       headers: {
@@ -263,7 +254,6 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
       signal: fetchAbortRef.current.signal,
     })
     .then(res => {
-      console.log('[DCSVE] Response status:', res.status);
       return res.json().then(data => {
         if (!res.ok && data?.error) {
           throw new Error(data.error);
@@ -275,7 +265,6 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
       });
     })
     .then(data => {
-      console.log('[DCSVE] Response data:', data);
       if (data && data.error) {
         setError(data.error);
         setEvents([]);
@@ -287,7 +276,6 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
     })
     .catch(err => {
       if (err.name !== 'AbortError') {
-        console.error('[DCSVE] Fetch error:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -336,11 +324,11 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
             {showFilter && (
               <div className="dcsve_csv_events__periods">
                 {[
-                  { key: 'week',    label: 'Woche' },
-                  { key: 'month',   label: 'Monat' },
-                  { key: 'quarter', label: 'Quartal' },
-                  { key: 'year',    label: 'Jahr' },
-                  { key: 'all',     label: 'Alle' },
+                  { key: 'week',    label: __('Woche', 'divi-csv-events') },
+                  { key: 'month',   label: __('Monat', 'divi-csv-events') },
+                  { key: 'quarter', label: __('Quartal', 'divi-csv-events') },
+                  { key: 'year',    label: __('Jahr', 'divi-csv-events') },
+                  { key: 'all',     label: __('Alle', 'divi-csv-events') },
                 ].map(p => (
                   <span
                     key={p.key}
@@ -374,24 +362,24 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
 
         <div className="dcsve_csv_events__content">
           {loading && (
-            <div className="dcsve_csv_events__empty">Loading events...</div>
+            <div className="dcsve_csv_events__empty">{__('Loading events...', 'divi-csv-events')}</div>
           )}
 
           {!loading && !csvSrc && (
             <div className="dcsve_csv_events__empty">
-              Please upload a CSV file in Content &gt; CSV Source.
+              {__('Please upload a CSV file in Content > CSV Source.', 'divi-csv-events')}
             </div>
           )}
 
           {!loading && csvSrc && error && (
             <div className="dcsve_csv_events__warning">
-              <strong>CSV structure is invalid.</strong><br />{error}
+              <strong>{__('CSV structure is invalid.', 'divi-csv-events')}</strong><br />{error}
             </div>
           )}
 
           {!loading && csvSrc && !error && events.length === 0 && (
             <div className="dcsve_csv_events__empty">
-              No events found for the selected period.
+              {__('No events found for the selected period.', 'divi-csv-events')}
             </div>
           )}
 
