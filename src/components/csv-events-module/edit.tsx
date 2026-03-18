@@ -135,8 +135,8 @@ const TableView = ({ events }: { events: CsvEvent[] }): ReactElement => {
               }
               rows.push(
                 <tr key={i}>
-                  <td style={{ whiteSpace: 'nowrap' }}>{fmtDate(d)}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>{e.time}</td>
+                  <td className="dcsve_csv_events__table-nowrap">{fmtDate(d)}</td>
+                  <td className="dcsve_csv_events__table-nowrap">{e.time}</td>
                   <td className="dcsve_csv_events__table-title">{e.title}</td>
                   <td>{e.location}</td>
                   <td className="dcsve_csv_events__table-desc">{e.description}</td>

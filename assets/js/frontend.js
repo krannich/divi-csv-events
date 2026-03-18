@@ -1,43 +1,43 @@
 (function () {
   'use strict';
 
-  var MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  var MONTHS_SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  var WDAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const MONTHS_SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const WDAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 
   // ─── Init ───
 
   function initAll() {
-    var modules = document.querySelectorAll('.dcsve_csv_events');
-    for (var i = 0; i < modules.length; i++) {
+    const modules = document.querySelectorAll('.dcsve_csv_events');
+    for (let i = 0; i < modules.length; i++) {
       initModule(modules[i]);
     }
   }
 
   function initModule(wrap) {
-    var configEl = wrap.querySelector('.dcsve-config');
-    var config = configEl ? JSON.parse(configEl.textContent) : {};
+    const configEl = wrap.querySelector('.dcsve-config');
+    const config = configEl ? JSON.parse(configEl.textContent) : {};
     wrap._dcsveConfig = config;
     wrap._dcsveCurrentView = config.fixedView || 'list';
 
     // Period filter buttons.
-    var periodBtns = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
-    for (var i = 0; i < periodBtns.length; i++) {
+    const periodBtns = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
+    for (let i = 0; i < periodBtns.length; i++) {
       periodBtns[i].addEventListener('click', function () {
-        var period = this.getAttribute('data-period');
-        var all = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
-        for (var b = 0; b < all.length; b++) all[b].classList.remove('dcsve_csv_events__btn--active');
+        const period = this.getAttribute('data-period');
+        const all = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
+        for (let b = 0; b < all.length; b++) all[b].classList.remove('dcsve_csv_events__btn--active');
         this.classList.add('dcsve_csv_events__btn--active');
         fetchAndRender(wrap, period);
       });
     }
 
     // View switcher buttons.
-    var viewBtns = wrap.querySelectorAll('.dcsve_csv_events__views .dcsve_csv_events__btn-view');
-    for (var j = 0; j < viewBtns.length; j++) {
+    const viewBtns = wrap.querySelectorAll('.dcsve_csv_events__views .dcsve_csv_events__btn-view');
+    for (let j = 0; j < viewBtns.length; j++) {
       viewBtns[j].addEventListener('click', function () {
-        var all = wrap.querySelectorAll('.dcsve_csv_events__views .dcsve_csv_events__btn-view');
-        for (var b = 0; b < all.length; b++) all[b].classList.remove('dcsve_csv_events__btn--active');
+        const all = wrap.querySelectorAll('.dcsve_csv_events__views .dcsve_csv_events__btn-view');
+        for (let b = 0; b < all.length; b++) all[b].classList.remove('dcsve_csv_events__btn--active');
         this.classList.add('dcsve_csv_events__btn--active');
         wrap._dcsveCurrentView = this.getAttribute('data-view');
         switchView(wrap, wrap._dcsveCurrentView);
@@ -46,12 +46,12 @@
 
     // Slider navigation (delegate to content area).
     wrap.addEventListener('click', function (e) {
-      var nav = e.target.closest('.dcsve_csv_events__slider-nav');
+      const nav = e.target.closest('.dcsve_csv_events__slider-nav');
       if (!nav) return;
-      var sliderId = nav.getAttribute('data-slider');
-      var track = document.getElementById(sliderId);
+      const sliderId = nav.getAttribute('data-slider');
+      const track = document.getElementById(sliderId);
       if (!track) return;
-      var amount = nav.classList.contains('dcsve_csv_events__slider-prev') ? -260 : 260;
+      const amount = nav.classList.contains('dcsve_csv_events__slider-prev') ? -260 : 260;
       track.scrollBy({ left: amount, behavior: 'smooth' });
     });
   }
@@ -59,15 +59,15 @@
   // ─── Fetch & Render ───
 
   function fetchAndRender(wrap, period) {
-    var config = wrap._dcsveConfig;
-    var dataEl = wrap.querySelector('.dcsve-data');
+    const config = wrap._dcsveConfig;
+    const dataEl = wrap.querySelector('.dcsve-data');
     if (!dataEl) return;
 
     // Read CSV URL from the initially loaded data config.
-    var csvUrl = config.csvUrl || '';
+    const csvUrl = config.csvUrl || '';
     if (!csvUrl) return;
 
-    var params = new URLSearchParams({
+    const params = new URLSearchParams({
       csv_url:      csvUrl,
       period:       period,
       period_count: String(config.periodCount || 1),
@@ -75,7 +75,7 @@
       show_past:    config.showPast ? '1' : '0',
     });
 
-    var restUrl = (window.dcsveRestUrl || '/wp-json/') + 'divi-csv-events/v1/events?' + params.toString();
+    const restUrl = (window.dcsveRestUrl || '/wp-json/') + 'divi-csv-events/v1/events?' + params.toString();
 
     fetch(restUrl)
       .then(function (res) { return res.json(); })
@@ -83,15 +83,15 @@
         renderAllViews(wrap, events, config);
         switchView(wrap, wrap._dcsveCurrentView);
       })
-      .catch(function (err) {
-        console.error('[DCSVE] Fetch error:', err);
+      .catch(function () {
+        // Silently handle fetch errors on the frontend.
       });
   }
 
   // ─── Render functions ───
 
   function parseDate(datum) {
-    var parts = datum.split('-');
+    const parts = datum.split('-');
     return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   }
 
@@ -100,11 +100,11 @@
   }
 
   function groupByMonth(events) {
-    var grouped = {};
-    var order = [];
-    for (var i = 0; i < events.length; i++) {
-      var d = parseDate(events[i].date);
-      var key = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    const grouped = {};
+    const order = [];
+    for (let i = 0; i < events.length; i++) {
+      const d = parseDate(events[i].date);
+      const key = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       if (!grouped[key]) { grouped[key] = []; order.push(key); }
       grouped[key].push(events[i]);
     }
@@ -112,20 +112,20 @@
   }
 
   function esc(str) {
-    var div = document.createElement('div');
+    const div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
   }
 
   function renderList(events) {
-    var g = groupByMonth(events);
-    var html = '';
-    for (var i = 0; i < g.order.length; i++) {
-      var month = g.order[i];
-      var items = g.groups[month];
+    const g = groupByMonth(events);
+    let html = '';
+    for (let i = 0; i < g.order.length; i++) {
+      const month = g.order[i];
+      const items = g.groups[month];
       html += '<div class="dcsve_csv_events__group"><div class="dcsve_csv_events__month">' + esc(month) + '</div>';
-      for (var j = 0; j < items.length; j++) {
-        var e = items[j], d = parseDate(e.date);
+      for (let j = 0; j < items.length; j++) {
+        const e = items[j], d = parseDate(e.date);
         html += '<div class="dcsve_csv_events__list-item">';
         html += '<div class="dcsve_csv_events__list-date">' + esc(fmtDate(d));
         if (e.time) html += '<strong>' + esc(e.time + ' Uhr') + '</strong>';
@@ -141,15 +141,15 @@
   }
 
   function renderCards(events) {
-    var g = groupByMonth(events);
-    var html = '';
-    for (var i = 0; i < g.order.length; i++) {
-      var month = g.order[i];
-      var items = g.groups[month];
+    const g = groupByMonth(events);
+    let html = '';
+    for (let i = 0; i < g.order.length; i++) {
+      const month = g.order[i];
+      const items = g.groups[month];
       html += '<div class="dcsve_csv_events__group"><div class="dcsve_csv_events__month">' + esc(month) + '</div>';
       html += '<div class="dcsve_csv_events__cards-grid">';
-      for (var j = 0; j < items.length; j++) {
-        var e = items[j], d = parseDate(e.date);
+      for (let j = 0; j < items.length; j++) {
+        const e = items[j], d = parseDate(e.date);
         html += '<div class="dcsve_csv_events__card">';
         html += '<div class="dcsve_csv_events__card-date"><span class="dcsve_csv_events__card-day">' + d.getDate() + '</span>';
         html += '<span class="dcsve_csv_events__card-mon">' + MONTHS_SHORT[d.getMonth()] + '</span></div>';
@@ -165,15 +165,15 @@
   }
 
   function renderTable(events) {
-    var html = '<div class="dcsve_csv_events__table-wrap"><table class="dcsve_csv_events__table">';
+    let html = '<div class="dcsve_csv_events__table-wrap"><table class="dcsve_csv_events__table">';
     html += '<thead><tr><th>Datum</th><th>Uhrzeit</th><th>Veranstaltung</th><th>Ort</th><th>Details</th></tr></thead><tbody>';
-    var lastMonth = '';
-    for (var i = 0; i < events.length; i++) {
-      var e = events[i], d = parseDate(e.date);
-      var m = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    let lastMonth = '';
+    for (let i = 0; i < events.length; i++) {
+      const e = events[i], d = parseDate(e.date);
+      const m = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       if (m !== lastMonth) { html += '<tr class="dcsve_csv_events__table-month"><td colspan="5">' + esc(m) + '</td></tr>'; lastMonth = m; }
-      html += '<tr><td style="white-space:nowrap">' + esc(fmtDate(d)) + '</td>';
-      html += '<td style="white-space:nowrap">' + esc(e.time) + '</td>';
+      html += '<tr><td class="dcsve_csv_events__table-nowrap">' + esc(fmtDate(d)) + '</td>';
+      html += '<td class="dcsve_csv_events__table-nowrap">' + esc(e.time) + '</td>';
       html += '<td class="dcsve_csv_events__table-title">' + esc(e.title) + '</td>';
       html += '<td>' + esc(e.location) + '</td>';
       html += '<td class="dcsve_csv_events__table-desc">' + esc(e.description) + '</td></tr>';
@@ -184,11 +184,11 @@
   }
 
   function renderSlider(events) {
-    var sliderId = 'dcsve-slider-' + Math.random().toString(36).substr(2, 8);
-    var html = '<div class="dcsve_csv_events__slider-wrap">';
+    const sliderId = 'dcsve-slider-' + Math.random().toString(36).substr(2, 8);
+    let html = '<div class="dcsve_csv_events__slider-wrap">';
     html += '<div class="dcsve_csv_events__slider-track" id="' + sliderId + '">';
-    for (var i = 0; i < events.length; i++) {
-      var e = events[i], d = parseDate(e.date);
+    for (let i = 0; i < events.length; i++) {
+      const e = events[i], d = parseDate(e.date);
       html += '<div class="dcsve_csv_events__slider-card">';
       html += '<div class="dcsve_csv_events__slider-top">';
       html += '<div class="dcsve_csv_events__slider-badge">';
@@ -210,20 +210,20 @@
   }
 
   function renderAllViews(wrap, events, config) {
-    var content = wrap.querySelector('.dcsve_csv_events__content');
+    const content = wrap.querySelector('.dcsve_csv_events__content');
     if (!content) return;
 
-    var showViewSwitcher = config.showViewSwitcher;
-    var fixedView = config.fixedView || '';
+    const showViewSwitcher = config.showViewSwitcher;
+    const fixedView = config.fixedView || '';
 
     // Determine which views to render.
-    var views = showViewSwitcher ? ['list', 'cards', 'table', 'slider'] : (fixedView ? [fixedView] : ['list', 'cards', 'table', 'slider']);
-    var defaultView = wrap._dcsveCurrentView || fixedView || 'list';
+    const views = showViewSwitcher ? ['list', 'cards', 'table', 'slider'] : (fixedView ? [fixedView] : ['list', 'cards', 'table', 'slider']);
+    const defaultView = wrap._dcsveCurrentView || fixedView || 'list';
 
-    var html = '';
-    for (var i = 0; i < views.length; i++) {
-      var v = views[i];
-      var display = (v === defaultView) ? '' : ' style="display:none"';
+    let html = '';
+    for (let i = 0; i < views.length; i++) {
+      const v = views[i];
+      const display = (v === defaultView) ? '' : ' style="display:none"';
       html += '<div class="dcsve_csv_events__view" data-view="' + v + '"' + display + '>';
       if (v === 'list')   html += renderList(events);
       if (v === 'cards')  html += renderCards(events);
@@ -236,8 +236,8 @@
   }
 
   function switchView(wrap, targetView) {
-    var views = wrap.querySelectorAll('.dcsve_csv_events__view');
-    for (var i = 0; i < views.length; i++) {
+    const views = wrap.querySelectorAll('.dcsve_csv_events__view');
+    for (let i = 0; i < views.length; i++) {
       views[i].style.display = views[i].getAttribute('data-view') === targetView ? '' : 'none';
     }
   }

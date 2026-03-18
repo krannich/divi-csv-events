@@ -23,6 +23,7 @@ const files = [
     '!webpack.config.js',
     '!composer.json',
     '!composer.lock',
+    '!.npmrc',
     '!CLAUDE.md',
     '!PROJECT_CONTEXT.md',
 ];

@@ -246,6 +246,10 @@
         border-bottom: 1px solid #eee;
     }
 
+    &__table-nowrap {
+        white-space: nowrap;
+    }
+
     &__table-title {
         font-weight: 600;
     }

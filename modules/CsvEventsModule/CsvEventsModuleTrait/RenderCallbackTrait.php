@@ -374,8 +374,8 @@ trait RenderCallbackTrait {
 			$mon  = $months_short[ (int) gmdate( 'n', $ts ) ];
 
 			$html .= '<tr data-date="' . esc_attr( $e['date'] ) . '">';
-			$html .= '<td style="white-space:nowrap;">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
-			$html .= '<td style="white-space:nowrap;">' . esc_html( $e['time'] ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-nowrap">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-nowrap">' . esc_html( $e['time'] ) . '</td>';
 			$html .= '<td class="dcsve_csv_events__table-title">' . esc_html( $e['title'] ) . '</td>';
 			$html .= '<td>' . esc_html( $e['location'] ) . '</td>';
 			$html .= '<td class="dcsve_csv_events__table-desc">' . esc_html( $e['description'] ) . '</td>';
