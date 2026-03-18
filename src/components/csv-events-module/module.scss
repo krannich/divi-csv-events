@@ -1,0 +1,486 @@
+// This style will render on Front-End and Visual Builder.
+
+.dcsve_csv_events {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    &__inner {
+        position: relative;
+    }
+
+    &__heading {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1rem;
+    }
+
+    // Empty state
+    &__empty {
+        padding: 2rem;
+        text-align: center;
+        color: #666;
+        background: #f7f7f7;
+        border-radius: 8px;
+    }
+
+    // Warning (invalid CSV header)
+    &__warning {
+        padding: 1rem 1.25rem;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        color: #664d03;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    // ─── Controls bar ───
+    &__controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+
+    &__periods {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    &__views {
+        margin-left: auto;
+        display: flex;
+        gap: 4px;
+    }
+
+    &__btn {
+        padding: 6px 14px;
+        font-size: 13px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+        line-height: 1.4;
+
+        &:hover {
+            border-color: #999;
+        }
+
+        &--active {
+            background: #2c2c2a;
+            color: #fff;
+            border-color: #2c2c2a;
+        }
+    }
+
+    &__btn-view {
+        padding: 6px 10px;
+        min-width: 36px;
+        text-align: center;
+    }
+
+    // ─── Content area ───
+    &__content {
+        min-height: 50px;
+    }
+
+    // ─── Month grouping ───
+    &__month {
+        font-size: 15px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #eee;
+    }
+
+    &__group {
+        margin-bottom: 1.5rem;
+    }
+
+    // ─── List view ───
+    &__list-item {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    &__list-date {
+        min-width: 90px;
+        font-size: 13px;
+        color: #888;
+        padding-top: 2px;
+
+        strong {
+            display: block;
+            color: #333;
+            font-weight: 600;
+        }
+    }
+
+    &__list-body {
+        flex: 1;
+    }
+
+    &__list-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 2px;
+        color: #222;
+    }
+
+    &__list-meta {
+        font-size: 13px;
+        color: #888;
+    }
+
+    // ─── Cards view ───
+    &__cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px;
+    }
+
+    &__card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        transition: border-color 0.15s;
+
+        &:hover {
+            border-color: #ccc;
+        }
+    }
+
+    &__card-date {
+        min-width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: var(--dcsve-accent-bg, #e8f5e9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    &__card-day {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--dcsve-accent, #2e7d32);
+    }
+
+    &__card-mon {
+        font-size: 10px;
+        color: var(--dcsve-accent, #388e3c);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    &__card-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__card-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 3px;
+        color: #222;
+    }
+
+    &__card-meta {
+        font-size: 12px;
+        color: #888;
+    }
+
+    &__card-desc {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // ─── Table view ───
+    &__table-wrap {
+        overflow-x: auto;
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        th {
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: 600;
+            color: #888;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+    }
+
+    &__table-month td {
+        padding: 12px 10px 6px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #666;
+        border-bottom: 1px solid #eee;
+    }
+
+    &__table-title {
+        font-weight: 600;
+    }
+
+    &__table-desc {
+        color: #888;
+    }
+
+    // ─── Slider view ───
+    &__slider-wrap {
+        position: relative;
+        overflow: hidden;
+    }
+
+    &__slider-track {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 4px 0;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__slider-card {
+        min-width: 240px;
+        max-width: 280px;
+        flex-shrink: 0;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 14px 16px;
+        transition: border-color 0.15s;
+
+        &:hover {
+            border-color: #ccc;
+        }
+    }
+
+    &__slider-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+
+    &__slider-badge {
+        background: var(--dcsve-accent-bg, #e8f5e9);
+        border-radius: 8px;
+        padding: 6px 10px;
+        text-align: center;
+        line-height: 1;
+    }
+
+    &__slider-badge-day {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--dcsve-accent, #2e7d32);
+    }
+
+    &__slider-badge-mon {
+        font-size: 10px;
+        color: var(--dcsve-accent, #388e3c);
+        text-transform: uppercase;
+    }
+
+    &__slider-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #222;
+    }
+
+    &__slider-detail {
+        font-size: 13px;
+        color: #888;
+        margin-top: 3px;
+    }
+
+    &__slider-desc {
+        font-size: 13px;
+        color: #aaa;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        background: #fff;
+        cursor: pointer;
+        font-size: 16px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        transition: all 0.15s;
+        z-index: 2;
+        opacity: 0;
+
+        &:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+    }
+
+    &__slider-wrap:hover &__slider-nav {
+        display: flex;
+        opacity: 1;
+    }
+
+    &__slider-prev {
+        left: 0;
+    }
+
+    &__slider-next {
+        right: 0;
+    }
+
+    @media (hover: none) {
+        &__slider-nav {
+            display: none;
+        }
+    }
+
+    // ─── No results ───
+    &__no-events {
+        padding: 2rem;
+        text-align: center;
+        color: #999;
+    }
+
+    // ─── Placeholder (VB preview) ───
+    &__placeholder {
+        padding: 1.5rem;
+        background: #f7f7f7;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    &__placeholder-text {
+        color: #666;
+        margin: 0 0 1rem;
+        font-size: 14px;
+    }
+
+    &__sample {
+        text-align: left;
+    }
+
+    &__sample-item {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        align-items: flex-start;
+    }
+
+    &__sample-badge {
+        min-width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: #e8f5e9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    &__sample-day {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2e7d32;
+    }
+
+    &__sample-mon {
+        font-size: 10px;
+        color: #388e3c;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    &__sample-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__sample-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 3px;
+        color: #222;
+    }
+
+    &__sample-meta {
+        font-size: 12px;
+        color: #888;
+    }
+
+    // ─── Responsive ───
+    @media (max-width: 480px) {
+        &__controls {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        &__views {
+            margin-left: 0;
+        }
+
+        &__cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        &__list-item {
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        &__list-date {
+            display: flex;
+            gap: 8px;
+            min-width: auto;
+        }
+    }
+}

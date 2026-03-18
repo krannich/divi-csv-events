@@ -1,0 +1,8 @@
+{
+    "autoload": {
+        "psr-4": {
+            "DiviCsvEvents\\": "modules/",
+            "DiviCsvEvents\\Includes\\": "includes/"
+        }
+    }
+}

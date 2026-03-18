@@ -1,0 +1,51 @@
+{
+  "module": {
+    "meta": {
+      "adminLabel": {
+        "desktop": {
+          "value": "CSV Events"
+        }
+      }
+    },
+    "advanced": {
+      "text": {
+        "text": {
+          "desktop": {
+            "value": {
+              "color": "light"
+            }
+          }
+        }
+      }
+    }
+  },
+  "heading": {
+    "decoration": {
+      "font": {
+        "font": {
+          "desktop": {
+            "value": {
+              "headingLevel": "h3"
+            }
+          }
+        }
+      }
+    }
+  },
+  "eventSettings": {
+    "innerContent": {
+      "desktop": {
+        "value": {
+          "period": "year",
+          "periodCount": "1",
+          "count": "0",
+          "showPast": "off",
+          "view": "list",
+          "showFilter": "on",
+          "showViewSwitcher": "on",
+          "accentColor": "#2e7d32"
+        }
+      }
+    }
+  }
+}
