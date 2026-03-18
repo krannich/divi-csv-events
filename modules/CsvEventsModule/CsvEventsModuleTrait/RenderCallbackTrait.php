@@ -135,7 +135,7 @@ trait RenderCallbackTrait {
 		} elseif ( empty( $events ) ) {
 			$content_html = '<div class="dcsve_csv_events__empty">' . esc_html__( 'No events found. Please upload a CSV file.', 'divi-csv-events' ) . '</div>';
 		} else {
-			$content_html = self::render_events_html( $events, $view, $accent_color );
+			$content_html = self::render_events_html( $events, $view, $accent_color, $show_view_switch );
 		}
 
 		$content_container = HTMLUtility::render(
@@ -218,13 +218,14 @@ trait RenderCallbackTrait {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param array  $events      Events array.
-	 * @param string $view        Fixed view or empty for all.
-	 * @param string $accent_color Accent color hex.
+	 * @param array  $events           Events array.
+	 * @param string $view             Fixed view or empty for all.
+	 * @param string $accent_color     Accent color hex.
+	 * @param bool   $show_view_switch Whether the view switcher is enabled.
 	 *
 	 * @return string HTML.
 	 */
-	private static function render_events_html( $events, $view, $accent_color ) {
+	private static function render_events_html( $events, $view, $accent_color, $show_view_switch ) {
 		$months_de   = [ 1 => 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember' ];
 		$months_short = [ 1 => 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez' ];
 		$wdays       = [ 'So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa' ];
@@ -244,8 +245,7 @@ trait RenderCallbackTrait {
 
 		// If view switcher is enabled, render all views (JS toggles visibility).
 		// If a fixed view is set WITHOUT switcher, render only that view.
-		$show_view_switch_check = self::is_on( $attrs['eventSettings']['innerContent']['desktop']['value']['showViewSwitcher'] ?? 'on' );
-		$views_to_render = $show_view_switch_check ? [ 'list', 'cards', 'table', 'slider' ] : ( $view ? [ $view ] : [ 'list', 'cards', 'table', 'slider' ] );
+		$views_to_render = $show_view_switch ? [ 'list', 'cards', 'table', 'slider' ] : ( $view ? [ $view ] : [ 'list', 'cards', 'table', 'slider' ] );
 		$default_view    = $view ?: 'list';
 		$html            = '';
 

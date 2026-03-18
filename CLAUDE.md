@@ -93,8 +93,15 @@ Datum;Uhrzeit;Titel;Ort;Beschreibung
 2026-06-13;08:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen
 ```
 
+Alternativ mit englischen Headern:
+```csv
+Date;Time;Title;Location;Description
+2026-06-13;08:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen
+```
+
 - Semikolon-getrennt (Excel DE-kompatibel)
 - UTF-8, BOM wird toleriert
+- Header: Deutsch (Datum;Uhrzeit;Titel;Ort;Beschreibung) oder Englisch (Date;Time;Title;Location;Description)
 - Datum im Format YYYY-MM-DD
 - Uhrzeit im Format HH:MM
 - Beschreibung ist optional

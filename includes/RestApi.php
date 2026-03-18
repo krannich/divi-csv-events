@@ -24,6 +24,7 @@ add_action( 'rest_api_init', function () {
 				'required'          => true,
 				'type'              => 'string',
 				'sanitize_callback' => 'esc_url_raw',
+				'validate_callback' => __NAMESPACE__ . '\\validate_csv_url',
 			],
 			'period'    => [
 				'default'           => 'year',
@@ -48,6 +49,52 @@ add_action( 'rest_api_init', function () {
 		],
 	] );
 } );
+
+/**
+ * Validate that csv_url points to a CSV file in the WordPress Media Library.
+ *
+ * Prevents arbitrary file disclosure by ensuring the URL resolves to a known
+ * attachment with a .csv extension.
+ *
+ * @since 1.0.0
+ *
+ * @param string          $value   The csv_url parameter value.
+ * @param \WP_REST_Request $request REST request.
+ * @param string          $param   Parameter name.
+ *
+ * @return true|\WP_Error
+ */
+function validate_csv_url( $value, $request, $param ) {
+	if ( empty( $value ) ) {
+		return new \WP_Error(
+			'rest_invalid_param',
+			__( 'The csv_url parameter is required.', 'divi-csv-events' ),
+			[ 'status' => 400 ]
+		);
+	}
+
+	// Must have a .csv extension.
+	$path = wp_parse_url( $value, PHP_URL_PATH );
+	if ( ! $path || '.csv' !== strtolower( substr( $path, -4 ) ) ) {
+		return new \WP_Error(
+			'rest_invalid_param',
+			__( 'Only .csv files are allowed.', 'divi-csv-events' ),
+			[ 'status' => 400 ]
+		);
+	}
+
+	// Must be a known Media Library attachment.
+	$attachment_id = attachment_url_to_postid( $value );
+	if ( ! $attachment_id ) {
+		return new \WP_Error(
+			'rest_invalid_param',
+			__( 'The CSV file must be uploaded to the WordPress Media Library.', 'divi-csv-events' ),
+			[ 'status' => 400 ]
+		);
+	}
+
+	return true;
+}
 
 /**
  * REST API callback to return parsed CSV events as JSON.

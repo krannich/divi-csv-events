@@ -29,9 +29,16 @@ class CsvParser {
 	 * @return array Array of event arrays.
 	 */
 	/**
-	 * Expected CSV header columns (case-insensitive).
+	 * Accepted CSV header columns (case-insensitive).
+	 * Supports both English and German headers for DE-market compatibility.
 	 */
-	private static $expected_headers = [ 'date', 'time', 'title', 'location', 'description' ];
+	private static $accepted_headers = [
+		[ 'date', 'datum' ],
+		[ 'time', 'uhrzeit' ],
+		[ 'title', 'titel' ],
+		[ 'location', 'ort' ],
+		[ 'description', 'beschreibung' ],
+	];
 
 	public static function parse( $csv_url, $period = 'year', $count = 0, $show_past = false, $period_count = 1 ) {
 		$result = self::load_csv( $csv_url );
@@ -71,20 +78,20 @@ class CsvParser {
 			return strtolower( trim( $col ) );
 		}, $header );
 
-		$expected = self::$expected_headers;
+		$accepted = self::$accepted_headers;
 		$missing  = [];
 
-		// Check first 3 required columns: Date, Time, Title.
+		// Check first 3 required columns: Date/Datum, Time/Uhrzeit, Title/Titel.
 		for ( $i = 0; $i < 3; $i++ ) {
-			if ( ! isset( $normalized[ $i ] ) || $normalized[ $i ] !== $expected[ $i ] ) {
-				$missing[] = ucfirst( $expected[ $i ] );
+			if ( ! isset( $normalized[ $i ] ) || ! in_array( $normalized[ $i ], $accepted[ $i ], true ) ) {
+				$missing[] = implode( '/', array_map( 'ucfirst', $accepted[ $i ] ) );
 			}
 		}
 
 		if ( ! empty( $missing ) ) {
 			$found = implode( ';', array_map( 'trim', $header ) );
 			return sprintf(
-				'Invalid CSV header. Expected: Date;Time;Title;Location;Description — Found: %s',
+				'Invalid CSV header. Expected: Date/Datum;Time/Uhrzeit;Title/Titel;Location/Ort;Description/Beschreibung — Found: %s',
 				$found
 			);
 		}

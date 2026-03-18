@@ -103,7 +103,7 @@
     var grouped = {};
     var order = [];
     for (var i = 0; i < events.length; i++) {
-      var d = parseDate(events[i].datum);
+      var d = parseDate(events[i].date);
       var key = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       if (!grouped[key]) { grouped[key] = []; order.push(key); }
       grouped[key].push(events[i]);
