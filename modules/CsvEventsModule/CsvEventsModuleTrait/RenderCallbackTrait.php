@@ -49,7 +49,8 @@ trait RenderCallbackTrait {
 		$show_past  = self::is_on( $settings['showPast'] ?? 'off' );
 		$show_filter      = self::is_on( $settings['showFilter'] ?? 'on' );
 		$show_view_switch = self::is_on( $settings['showViewSwitcher'] ?? 'on' );
-		$accent_color     = $settings['accentColor'] ?? '#2e7d32';
+		$accent_color_raw = $settings['accentColor'] ?? '#2e7d32';
+		$accent_color     = preg_match( '/^#([0-9a-fA-F]{3}){1,2}$/', $accent_color_raw ) ? $accent_color_raw : '#2e7d32';
 
 		// Heading.
 		$heading = $elements->render(
@@ -155,7 +156,7 @@ trait RenderCallbackTrait {
 		$inner_html .= $content_container;
 
 		// Events data as JSON for client-side filtering.
-		$events_json = wp_json_encode( $events );
+		$events_json = wp_json_encode( $events, JSON_HEX_TAG );
 		$config_json = wp_json_encode( [
 			'csvUrl'           => $csv_url,
 			'period'           => $period,
@@ -166,7 +167,7 @@ trait RenderCallbackTrait {
 			'showFilter'       => $show_filter,
 			'showViewSwitcher' => $show_view_switch,
 			'accentColor'      => $accent_color,
-		] );
+		], JSON_HEX_TAG );
 
 		$script_tag = '<script type="application/json" class="dcsve-data">' . $events_json . '</script>';
 		$config_tag = '<script type="application/json" class="dcsve-config">' . $config_json . '</script>';
@@ -229,9 +230,43 @@ trait RenderCallbackTrait {
 	 * @return string HTML.
 	 */
 	private static function render_events_html( $events, $view, $accent_color, $show_view_switch ) {
-		$months_de   = [ 1 => 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember' ];
-		$months_short = [ 1 => 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez' ];
-		$wdays       = [ 'So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa' ];
+		$months_de = [
+			1  => __( 'Januar', 'divi-csv-events' ),
+			2  => __( 'Februar', 'divi-csv-events' ),
+			3  => __( 'März', 'divi-csv-events' ),
+			4  => __( 'April', 'divi-csv-events' ),
+			5  => __( 'Mai', 'divi-csv-events' ),
+			6  => __( 'Juni', 'divi-csv-events' ),
+			7  => __( 'Juli', 'divi-csv-events' ),
+			8  => __( 'August', 'divi-csv-events' ),
+			9  => __( 'September', 'divi-csv-events' ),
+			10 => __( 'Oktober', 'divi-csv-events' ),
+			11 => __( 'November', 'divi-csv-events' ),
+			12 => __( 'Dezember', 'divi-csv-events' ),
+		];
+		$months_short = [
+			1  => __( 'Jan', 'divi-csv-events' ),
+			2  => __( 'Feb', 'divi-csv-events' ),
+			3  => __( 'Mär', 'divi-csv-events' ),
+			4  => __( 'Apr', 'divi-csv-events' ),
+			5  => __( 'Mai', 'divi-csv-events' ),
+			6  => __( 'Jun', 'divi-csv-events' ),
+			7  => __( 'Jul', 'divi-csv-events' ),
+			8  => __( 'Aug', 'divi-csv-events' ),
+			9  => __( 'Sep', 'divi-csv-events' ),
+			10 => __( 'Okt', 'divi-csv-events' ),
+			11 => __( 'Nov', 'divi-csv-events' ),
+			12 => __( 'Dez', 'divi-csv-events' ),
+		];
+		$wdays = [
+			__( 'So', 'divi-csv-events' ),
+			__( 'Mo', 'divi-csv-events' ),
+			__( 'Di', 'divi-csv-events' ),
+			__( 'Mi', 'divi-csv-events' ),
+			__( 'Do', 'divi-csv-events' ),
+			__( 'Fr', 'divi-csv-events' ),
+			__( 'Sa', 'divi-csv-events' ),
+		];
 
 		// Group events by month.
 		$grouped = [];
@@ -287,18 +322,17 @@ trait RenderCallbackTrait {
 				$mon  = $months_short[ (int) gmdate( 'n', $ts ) ];
 
 				$html .= '<div class="dcsve_csv_events__list-item" data-date="' . esc_attr( $e['date'] ) . '">';
-				$html .= '<div class="dcsve_csv_events__list-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' );
+				$html .= '<div class="dcsve_csv_events__list-date dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' );
 				if ( ! empty( $e['time'] ) ) {
 					$html .= '<strong>' . esc_html( $e['time'] . ' Uhr' ) . '</strong>';
 				}
 				$html .= '</div>';
 				$html .= '<div class="dcsve_csv_events__list-body">';
-				$html .= '<div class="dcsve_csv_events__list-title">' . esc_html( $e['title'] ) . '</div>';
-				$meta = esc_html( $e['location'] );
+				$html .= '<div class="dcsve_csv_events__list-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
+				$html .= '<div class="dcsve_csv_events__list-meta dcsve_csv_events__el-meta">' . esc_html( $e['location'] ) . '</div>';
 				if ( ! empty( $e['description'] ) ) {
-					$meta .= ' &middot; ' . esc_html( $e['description'] );
+					$html .= '<div class="dcsve_csv_events__list-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
 				}
-				$html .= '<div class="dcsve_csv_events__list-meta">' . $meta . '</div>';
 				$html .= '</div></div>';
 			}
 			$html .= '</div>';
@@ -321,20 +355,20 @@ trait RenderCallbackTrait {
 				$mon = $months_short[ (int) gmdate( 'n', $ts ) ];
 
 				$html .= '<div class="dcsve_csv_events__card" data-date="' . esc_attr( $e['date'] ) . '">';
-				$html .= '<div class="dcsve_csv_events__card-date">';
+				$html .= '<div class="dcsve_csv_events__card-date dcsve_csv_events__el-date">';
 				$html .= '<span class="dcsve_csv_events__card-day">' . esc_html( $day ) . '</span>';
 				$html .= '<span class="dcsve_csv_events__card-mon">' . esc_html( $mon ) . '</span>';
 				$html .= '</div>';
 				$html .= '<div class="dcsve_csv_events__card-body">';
-				$html .= '<div class="dcsve_csv_events__card-title">' . esc_html( $e['title'] ) . '</div>';
-				$html .= '<div class="dcsve_csv_events__card-meta">';
+				$html .= '<div class="dcsve_csv_events__card-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
+				$html .= '<div class="dcsve_csv_events__card-meta dcsve_csv_events__el-meta">';
 				if ( ! empty( $e['time'] ) ) {
 					$html .= esc_html( $e['time'] . ' Uhr' ) . ' &middot; ';
 				}
 				$html .= esc_html( $e['location'] );
 				$html .= '</div>';
 				if ( ! empty( $e['description'] ) ) {
-					$html .= '<div class="dcsve_csv_events__card-desc">' . esc_html( $e['description'] ) . '</div>';
+					$html .= '<div class="dcsve_csv_events__card-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
 				}
 				$html .= '</div></div>';
 			}
@@ -374,11 +408,11 @@ trait RenderCallbackTrait {
 			$mon  = $months_short[ (int) gmdate( 'n', $ts ) ];
 
 			$html .= '<tr data-date="' . esc_attr( $e['date'] ) . '">';
-			$html .= '<td class="dcsve_csv_events__table-nowrap">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__table-nowrap">' . esc_html( $e['time'] ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__table-title">' . esc_html( $e['title'] ) . '</td>';
-			$html .= '<td>' . esc_html( $e['location'] ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__table-desc">' . esc_html( $e['description'] ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $e['time'] ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__el-meta">' . esc_html( $e['location'] ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</td>';
 			$html .= '</tr>';
 		}
 
@@ -413,20 +447,20 @@ trait RenderCallbackTrait {
 
 			$html .= '<div class="dcsve_csv_events__slider-card" data-date="' . esc_attr( $e['date'] ) . '">';
 			$html .= '<div class="dcsve_csv_events__slider-top">';
-			$html .= '<div class="dcsve_csv_events__slider-badge">';
+			$html .= '<div class="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">';
 			$html .= '<div class="dcsve_csv_events__slider-badge-day">' . esc_html( $day ) . '</div>';
 			$html .= '<div class="dcsve_csv_events__slider-badge-mon">' . esc_html( $mon ) . '</div>';
 			$html .= '</div>';
-			$html .= '<div class="dcsve_csv_events__slider-title">' . esc_html( $e['title'] ) . '</div>';
+			$html .= '<div class="dcsve_csv_events__slider-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
 			$html .= '</div>';
-			$html .= '<div class="dcsve_csv_events__slider-detail">';
+			$html .= '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">';
 			if ( ! empty( $e['time'] ) ) {
 				$html .= esc_html( $e['time'] . ' Uhr' ) . ' &middot; ';
 			}
 			$html .= esc_html( $e['location'] );
 			$html .= '</div>';
 			if ( ! empty( $e['description'] ) ) {
-				$html .= '<div class="dcsve_csv_events__slider-desc">' . esc_html( $e['description'] ) . '</div>';
+				$html .= '<div class="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
 			}
 			$html .= '</div>';
 		}

@@ -44,6 +44,31 @@ export const ModuleStyles = ({
         attrName: 'heading',
       })}
 
+      {/* Date Text */}
+      {elements.style({
+        attrName: 'dateText',
+      })}
+
+      {/* Title Text */}
+      {elements.style({
+        attrName: 'titleText',
+      })}
+
+      {/* Meta Text */}
+      {elements.style({
+        attrName: 'metaText',
+      })}
+
+      {/* Description Text */}
+      {elements.style({
+        attrName: 'descText',
+      })}
+
+      {/* Filter Buttons */}
+      {elements.style({
+        attrName: 'filterBtn',
+      })}
+
       <CssStyle
         selector={orderClass}
         attr={attrs.css}

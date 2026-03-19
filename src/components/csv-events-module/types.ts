@@ -1,3 +1,10 @@
+// WordPress REST API settings on window.
+declare global {
+  interface Window {
+    wpApiSettings?: { root: string; nonce: string };
+  }
+}
+
 // Divi dependencies.
 import { ModuleEditProps } from '@divi/module-library';
 import {
@@ -15,8 +22,13 @@ export interface CsvEventsModuleCssAttr extends Module.Css.AttributeValue {
 
 export type CsvEventsModuleCssGroupAttr = FormatBreakpointStateAttr<CsvEventsModuleCssAttr>;
 
+export interface CsvSourceValue {
+  src?: string;
+}
+
 export interface EventSettingsValue {
   period?: string;
+  periodCount?: string;
   count?: string;
   showPast?: string;
   view?: string;
@@ -56,13 +68,40 @@ export interface CsvEventsModuleAttrs extends InternalAttrs {
     };
   };
 
-  // CSV Source URL (text field)
+  // CSV Source URL (upload field)
   csvSource?: {
-    innerContent?: FormatBreakpointStateAttr<string>;
+    innerContent?: FormatBreakpointStateAttr<CsvSourceValue>;
   };
 
   // Heading
   heading?: Element.Types.Title.Attributes;
+
+  // Font decoration elements
+  dateText?: {
+    decoration?: {
+      font?: Element.Decoration.Font.Attributes;
+    };
+  };
+  titleText?: {
+    decoration?: {
+      font?: Element.Decoration.Font.Attributes;
+    };
+  };
+  metaText?: {
+    decoration?: {
+      font?: Element.Decoration.Font.Attributes;
+    };
+  };
+  descText?: {
+    decoration?: {
+      font?: Element.Decoration.Font.Attributes;
+    };
+  };
+  filterBtn?: {
+    decoration?: {
+      font?: Element.Decoration.Font.Attributes;
+    };
+  };
 
   // Event settings (all in one object with sub-values)
   eventSettings?: {

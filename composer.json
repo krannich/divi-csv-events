@@ -1,4 +1,11 @@
 {
+    "name": "divi-simple-event-list/divi-csv-events",
+    "description": "Divi 5 module to display events from a CSV file.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.0"
+    },
     "autoload": {
         "psr-4": {
             "DiviCsvEvents\\": "modules/",

@@ -3,6 +3,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require( 'copy-webpack-plugin' );
 
 module.exports = {
+  mode: process.env.NODE_ENV || 'production',
+
   entry: {
     bundle: './src/index.ts',
   },
@@ -49,9 +51,6 @@ module.exports = {
         use: [
           {
             loader: 'thread-loader',
-            options: {
-              workers: - 1,
-            },
           },
           {
             loader: 'babel-loader',
@@ -65,7 +64,7 @@ module.exports = {
                 '@babel/preset-react',
               ],
               plugins: [
-                '@babel/plugin-proposal-class-properties',
+                '@babel/plugin-transform-class-properties',
               ],
               cacheDirectory: false,
             },

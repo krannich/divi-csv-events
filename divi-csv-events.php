@@ -37,6 +37,12 @@ define( 'DCSVE_VERSION', '1.0.0' );
 /**
  * Requires Autoloader.
  */
+if ( ! file_exists( DCSVE_PATH . 'vendor/autoload.php' ) ) {
+	add_action( 'admin_notices', function () {
+		echo '<div class="notice notice-error"><p><strong>Divi CSV Events:</strong> ' . esc_html__( 'Please run "composer install" in the plugin directory.', 'divi-csv-events' ) . '</p></div>';
+	} );
+	return;
+}
 require DCSVE_PATH . 'vendor/autoload.php';
 require DCSVE_PATH . 'modules/Modules.php';
 

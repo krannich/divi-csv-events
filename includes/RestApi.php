@@ -30,6 +30,17 @@ add_action( 'rest_api_init', function () {
 				'default'           => 'year',
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => function ( $value ) {
+					$allowed = [ 'week', 'month', 'quarter', 'year', 'all' ];
+					if ( ! in_array( $value, $allowed, true ) ) {
+						return new \WP_Error(
+							'rest_invalid_param',
+							sprintf( __( 'Invalid period. Allowed values: %s', 'divi-csv-events' ), implode( ', ', $allowed ) ),
+							[ 'status' => 400 ]
+						);
+					}
+					return true;
+				},
 			],
 			'count'     => [
 				'default'           => 0,
@@ -37,9 +48,8 @@ add_action( 'rest_api_init', function () {
 				'sanitize_callback' => 'absint',
 			],
 			'show_past' => [
-				'default'           => '0',
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => false,
+				'type'              => 'boolean',
 			],
 			'period_count' => [
 				'default'           => 1,
@@ -109,8 +119,7 @@ function rest_get_events( $request ) {
 	$csv_url       = $request->get_param( 'csv_url' );
 	$period        = $request->get_param( 'period' );
 	$count         = (int) $request->get_param( 'count' );
-	$show_past_raw = $request->get_param( 'show_past' );
-	$show_past     = in_array( $show_past_raw, [ '1', 'true', 'on' ], true );
+	$show_past = (bool) $request->get_param( 'show_past' );
 
 	$period_count = (int) $request->get_param( 'period_count' );
 	$result       = CsvParser::parse( $csv_url, $period, $count, $show_past, $period_count );

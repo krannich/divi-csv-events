@@ -152,6 +152,181 @@
       "elementType": "heading",
       "childrenSanitizer": "et_core_esc_previously"
     },
+    "dateText": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__el-date",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 20,
+            "component": {
+              "props": {
+                "groupLabel": "Date Text",
+                "fieldLabel": "Date",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "titleText": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__el-title",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 30,
+            "component": {
+              "props": {
+                "groupLabel": "Title Text",
+                "fieldLabel": "Title",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metaText": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__el-meta",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 40,
+            "component": {
+              "props": {
+                "groupLabel": "Meta Text",
+                "fieldLabel": "Meta",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "descText": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__el-desc",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 50,
+            "component": {
+              "props": {
+                "groupLabel": "Description Text",
+                "fieldLabel": "Description",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "filterBtn": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__btn",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 60,
+            "component": {
+              "props": {
+                "groupLabel": "Filter Buttons",
+                "fieldLabel": "Filter",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "eventSettings": {
       "type": "object",
       "default": {
@@ -221,7 +396,9 @@
                   "min": 1,
                   "max": 12,
                   "step": 1,
-                  "defaultValue": "1"
+                  "defaultValue": "1",
+                  "defaultUnit": "",
+                  "allowedUnits": []
                 }
               }
             },
@@ -245,7 +422,9 @@
                   "min": 0,
                   "max": 50,
                   "step": 1,
-                  "defaultValue": "0"
+                  "defaultValue": "0",
+                  "defaultUnit": "",
+                  "allowedUnits": []
                 }
               }
             },
@@ -268,7 +447,7 @@
               }
             },
             "view": {
-              "groupSlug": "designEventDisplay",
+              "groupSlug": "contentEventSettings",
               "priority": 40,
               "render": true,
               "subName": "view",
@@ -294,7 +473,7 @@
               }
             },
             "showFilter": {
-              "groupSlug": "designEventDisplay",
+              "groupSlug": "contentEventSettings",
               "priority": 50,
               "render": true,
               "subName": "showFilter",
@@ -312,7 +491,7 @@
               }
             },
             "showViewSwitcher": {
-              "groupSlug": "designEventDisplay",
+              "groupSlug": "contentEventSettings",
               "priority": 60,
               "render": true,
               "subName": "showViewSwitcher",
@@ -330,7 +509,7 @@
               }
             },
             "accentColor": {
-              "groupSlug": "designEventDisplay",
+              "groupSlug": "contentEventSettings",
               "priority": 70,
               "render": true,
               "subName": "accentColor",
@@ -392,18 +571,6 @@
           "name": "divi/composite",
           "props": {
             "groupLabel": "Elements"
-          }
-        }
-      },
-      "designEventDisplay": {
-        "panel": "design",
-        "priority": 5,
-        "groupName": "designEventDisplay",
-        "multiElements": true,
-        "component": {
-          "name": "divi/composite",
-          "props": {
-            "groupLabel": "Event Display"
           }
         }
       }

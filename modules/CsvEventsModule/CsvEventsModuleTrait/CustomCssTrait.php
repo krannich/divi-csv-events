@@ -20,6 +20,7 @@ trait CustomCssTrait {
 	 * @since 1.0.0
 	 */
 	public static function custom_css() {
-		return \WP_Block_Type_Registry::get_instance()->get_registered( 'dcsve/csv-events' )->customCssFields;
+		$block_type = \WP_Block_Type_Registry::get_instance()->get_registered( 'dcsve/csv-events' );
+		return $block_type ? $block_type->customCssFields : [];
 	}
 }

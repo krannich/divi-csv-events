@@ -67,24 +67,34 @@ divi-csv-events/
 ## Modul-Settings (Divi Visual Builder)
 
 ### Content-Tab
+**Data:**
 | Setting | Type | Default | Beschreibung |
 |---------|------|---------|-------------|
-| `csv_source` | upload / text | '' | CSV-Datei aus Media Library oder URL |
+| `csv_source` | upload | '' | CSV-Datei aus Media Library |
 | `heading` | text | '' | Optionale Überschrift |
+
+**Elements:**
+| Setting | Type | Default | Beschreibung |
+|---------|------|---------|-------------|
 | `period` | select | 'year' | week, month, quarter, year, all |
+| `period_count` | range (1-12) | 1 | Anzahl Perioden (z.B. 2 = 2 Monate) |
 | `count` | range (0-50) | 0 | Max Termine (0 = alle) |
-| `show_past` | yes_no | 'off' | Vergangene Termine anzeigen |
+| `show_past` | toggle | off | Vergangene Termine anzeigen |
+| `view` | select | 'list' | list, cards, table, slider |
+| `show_filter` | toggle | on | Zeitraum-Filter anzeigen |
+| `show_view_switcher` | toggle | on | Ansichts-Umschalter anzeigen |
+| `accent_color` | color | '#2e7d32' | Farbe für Datums-Badge |
 
 ### Design-Tab
-| Setting | Type | Default | Beschreibung |
-|---------|------|---------|-------------|
-| `view` | select | '' | list, cards, table, slider (leer = umschaltbar) |
-| `show_filter` | yes_no | 'on' | Zeitraum-Filter anzeigen |
-| `show_view_switcher` | yes_no | 'on' | Ansichts-Umschalter anzeigen |
-| `accent_color` | color | '#2e7d32' | Farbe für Datums-Badge |
-| `title_font` | font | Divi default | Typografie für Event-Titel |
-| `meta_font` | font | Divi default | Typografie für Meta (Zeit, Ort) |
-| `desc_font` | font | Divi default | Typografie für Beschreibung |
+Divi 5 native Font-Decoration-Gruppen (jeweils mit Font-Family, Size, Weight, Color, Line-Height, Letter-Spacing — responsive):
+| Gruppe | Steuert |
+|--------|---------|
+| Heading Text | Überschrift |
+| Date Text | Datum/Uhrzeit in allen Views |
+| Title Text | Event-Titel in allen Views |
+| Meta Text | Ort-Zeile in allen Views |
+| Description Text | Beschreibung in allen Views |
+| Filter Buttons | Woche/Monat/Quartal/Jahr/Alle Chips |
 
 ## CSV-Format
 

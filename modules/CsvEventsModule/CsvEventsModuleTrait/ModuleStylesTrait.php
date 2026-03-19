@@ -58,6 +58,41 @@ trait ModuleStylesTrait {
 						]
 					),
 
+					// Date Text.
+					$elements->style(
+						[
+							'attrName' => 'dateText',
+						]
+					),
+
+					// Title Text.
+					$elements->style(
+						[
+							'attrName' => 'titleText',
+						]
+					),
+
+					// Meta Text.
+					$elements->style(
+						[
+							'attrName' => 'metaText',
+						]
+					),
+
+					// Description Text.
+					$elements->style(
+						[
+							'attrName' => 'descText',
+						]
+					),
+
+					// Filter Buttons.
+					$elements->style(
+						[
+							'attrName' => 'filterBtn',
+						]
+					),
+
 					// Custom CSS.
 					CssStyle::style(
 						[
