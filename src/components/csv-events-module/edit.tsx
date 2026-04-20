@@ -211,7 +211,9 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
   };
 
   // Read attributes.
+  const sourceMode  = (attrs?.csvSourceMode?.innerContent?.desktop?.value?.mode) || 'file';
   const csvSrc      = attrs?.csvSource?.innerContent?.desktop?.value?.src || '';
+  const csvContent  = attrs?.csvContent?.innerContent?.desktop?.value?.content || '';
   const settings    = attrs?.eventSettings?.innerContent?.desktop?.value || {};
   const period      = settings.period || 'year';
   const periodCount = parseInt(settings.periodCount || '1', 10);
@@ -224,10 +226,11 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
 
   const fetchAbortRef = useRef<AbortController>();
 
-  // Fetch events using native fetch (bypasses potential useFetch issues in VB iframe).
   useEffect(() => {
-    if (!csvSrc) {
+    const hasSource = sourceMode === 'file' ? !!csvSrc : !!csvContent;
+    if (!hasSource) {
       setEvents([]);
+      setError('');
       return;
     }
 
@@ -240,55 +243,71 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
       setLoading(true);
       setError('');
 
-      const params = new URLSearchParams({
-        csv_url:      csvSrc,
-        period:       period,
-        period_count: String(periodCount),
-        count:        String(count),
-        show_past:    showPast ? 'true' : 'false',
-      });
-
-      // Use the WP REST API base URL from the parent window.
       const wpApiSettings = window.wpApiSettings
         || window.parent?.wpApiSettings
         || { root: '/wp-json/', nonce: '' };
 
-      const restUrl = wpApiSettings.root + 'divi-csv-events/v1/events?' + params.toString();
+      const baseUrl = wpApiSettings.root + 'divi-csv-events/v1/events';
 
-      fetch(restUrl, {
-        method: 'GET',
-        headers: {
-          'X-WP-Nonce': wpApiSettings.nonce || '',
-        },
-        signal: fetchAbortRef.current.signal,
-      })
-      .then(res => {
-        return res.json().then(data => {
-          if (!res.ok && data?.error) {
-            throw new Error(data.error);
-          }
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-          }
-          return data;
+      const filterPayload = {
+        period,
+        period_count: String(periodCount),
+        count:        String(count),
+        show_past:    showPast ? 'true' : 'false',
+      };
+
+      let requestInit: RequestInit;
+      let url: string;
+
+      if (sourceMode === 'paste') {
+        url = baseUrl;
+        requestInit = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-WP-Nonce':   wpApiSettings.nonce || '',
+          },
+          body: JSON.stringify({
+            csv_content: csvContent,
+            ...filterPayload,
+          }),
+          signal: fetchAbortRef.current.signal,
+        };
+      } else {
+        const params = new URLSearchParams({
+          csv_url: csvSrc,
+          ...filterPayload,
         });
-      })
-      .then(data => {
-        if (data && data.error) {
-          setError(data.error);
-          setEvents([]);
-        } else {
-          setEvents(Array.isArray(data) ? data : []);
-          setError('');
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        if (err.name !== 'AbortError') {
-          setError(err.message);
+        url = baseUrl + '?' + params.toString();
+        requestInit = {
+          method: 'GET',
+          headers: { 'X-WP-Nonce': wpApiSettings.nonce || '' },
+          signal: fetchAbortRef.current.signal,
+        };
+      }
+
+      fetch(url, requestInit)
+        .then(res => res.json().then(data => {
+          if (!res.ok && data?.error) throw new Error(data.error);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return data;
+        }))
+        .then(data => {
+          if (data && data.error) {
+            setError(data.error);
+            setEvents([]);
+          } else {
+            setEvents(Array.isArray(data) ? data : []);
+            setError('');
+          }
           setLoading(false);
-        }
-      });
+        })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            setError(err.message);
+            setLoading(false);
+          }
+        });
     }, 300);
 
     return () => {
@@ -297,7 +316,7 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
         fetchAbortRef.current.abort();
       }
     };
-  }, [csvSrc, period, periodCount, count, showPast]);
+  }, [sourceMode, csvSrc, csvContent, period, periodCount, count, showPast]);
 
   // Determine which view to show.
   const currentView = view || 'list';
@@ -376,19 +395,25 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
             <div className="dcsve_csv_events__empty">{__('Loading events...', 'divi-csv-events')}</div>
           )}
 
-          {!loading && !csvSrc && (
+          {!loading && sourceMode === 'file' && !csvSrc && (
             <div className="dcsve_csv_events__empty">
               {__('Please upload a CSV file in Content > CSV Source.', 'divi-csv-events')}
             </div>
           )}
 
-          {!loading && csvSrc && error && (
+          {!loading && sourceMode === 'paste' && !csvContent && (
+            <div className="dcsve_csv_events__empty">
+              {__('Please paste CSV data in Content > CSV Data.', 'divi-csv-events')}
+            </div>
+          )}
+
+          {!loading && (sourceMode === 'file' ? csvSrc : csvContent) && error && (
             <div className="dcsve_csv_events__warning">
               <strong>{__('CSV structure is invalid.', 'divi-csv-events')}</strong><br />{error}
             </div>
           )}
 
-          {!loading && csvSrc && !error && events.length === 0 && (
+          {!loading && (sourceMode === 'file' ? csvSrc : csvContent) && !error && events.length === 0 && (
             <div className="dcsve_csv_events__empty">
               {__('No events found for the selected period.', 'divi-csv-events')}
             </div>

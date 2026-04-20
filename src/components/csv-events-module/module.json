@@ -57,6 +57,41 @@
         }
       }
     },
+    "csvSourceMode": {
+      "type": "object",
+      "default": {
+        "innerContent": { "desktop": { "value": { "mode": "file" } } }
+      },
+      "settings": {
+        "innerContent": {
+          "groupType": "group-item",
+          "item": {
+            "groupSlug": "contentCsvSource",
+            "priority": 5,
+            "render": true,
+            "subName": "mode",
+            "label": "CSV Source",
+            "description": "Choose how to provide event data.",
+            "features": {
+              "sticky": false,
+              "dynamicContent": false,
+              "responsive": false,
+              "hover": false
+            },
+            "component": {
+              "name": "divi/select",
+              "type": "field",
+              "props": {
+                "options": {
+                  "file":  { "label": "CSV File" },
+                  "paste": { "label": "Paste CSV Data" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "csvSource": {
       "type": "object",
       "settings": {
@@ -84,6 +119,40 @@
                   "chooseText": "Select CSV File",
                   "uploadButtonText": "Upload CSV",
                   "hideMetadata": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "csvContent": {
+      "type": "object",
+      "default": {
+        "innerContent": { "desktop": { "value": { "content": "" } } }
+      },
+      "settings": {
+        "innerContent": {
+          "groupType": "group-items",
+          "items": {
+            "content": {
+              "groupSlug": "contentCsvSource",
+              "priority": 15,
+              "render": true,
+              "subName": "content",
+              "label": "CSV Data",
+              "description": "Paste CSV data directly. Format: Date;Time;Title;Location;Description (max 100 KB)",
+              "features": {
+                "sticky": false,
+                "dynamicContent": false,
+                "responsive": false,
+                "hover": false
+              },
+              "component": {
+                "name": "divi/textarea",
+                "type": "field",
+                "props": {
+                  "showPlaceholderOnEmpty": true
                 }
               }
             }

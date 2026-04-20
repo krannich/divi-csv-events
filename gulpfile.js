@@ -11,6 +11,8 @@ const files = [
     '!src/**',
     '!reference/**',
     '!_scaffold/**',
+    '!tests/**',
+    '!docs/**',
 
     // Ignored files.
     '!**/*.zip',
@@ -23,6 +25,7 @@ const files = [
     '!webpack.config.js',
     '!composer.json',
     '!composer.lock',
+    '!phpunit.xml.dist',
     '!.npmrc',
     '!CLAUDE.md',
     '!PROJECT_CONTEXT.md',

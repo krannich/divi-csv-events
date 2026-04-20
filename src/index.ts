@@ -8,7 +8,7 @@ import { csvEventsModule } from './components/csv-events-module';
 
 import './module-icons';
 
-// Register modules.
+// Register the module.
 addAction('divi.moduleLibrary.registerModuleLibraryStore.after', 'diviCsvEvents', () => {
   registerModule(csvEventsModule.metadata, omit(csvEventsModule, 'metadata'));
 });

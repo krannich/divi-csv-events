@@ -123,7 +123,7 @@ Divi 5 nutzt ein deklaratives Settings-Format:
 - Extends `Divi\Module\Module` (Divi 5 base class)
 - Nutzt Traits für Render, Styles, Classnames
 - `render_callback()` ist der zentrale Render-Entry-Point
-- Ruft `CsvParser::parse()` auf und rendert HTML basierend auf den Settings
+- Ruft `CsvParser::parseUrl()` (Datei-Modus) oder `CsvParser::parseString()` (Paste-Modus) auf und rendert HTML basierend auf den Settings
 
 ### Visual Builder Preview (edit.tsx)
 - React Component, rendert im Builder

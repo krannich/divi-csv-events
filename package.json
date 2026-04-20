@@ -1,6 +1,6 @@
 {
   "name": "divi-csv-events",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "author": "DiviSimpleEventList",
   "engines": {
@@ -10,7 +10,7 @@
   "scripts": {
     "start": "NODE_ENV=development webpack -w --config webpack.config.js --progress",
     "build": "NODE_ENV=production webpack --config webpack.config.js --progress",
-    "zip": "npm run build && npx gulp zip"
+    "zip": "npm run build && composer install --no-dev --optimize-autoloader --quiet && npx gulp zip && composer install --quiet"
   },
   "devDependencies": {
     "@babel/core": "^7.24.5",

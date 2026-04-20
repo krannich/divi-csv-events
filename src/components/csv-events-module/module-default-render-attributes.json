@@ -32,6 +32,12 @@
       }
     }
   },
+  "csvSourceMode": {
+    "innerContent": { "desktop": { "value": { "mode": "file" } } }
+  },
+  "csvContent": {
+    "innerContent": { "desktop": { "value": { "content": "" } } }
+  },
   "eventSettings": {
     "innerContent": {
       "desktop": {

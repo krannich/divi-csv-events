@@ -22,8 +22,18 @@ export interface CsvEventsModuleCssAttr extends Module.Css.AttributeValue {
 
 export type CsvEventsModuleCssGroupAttr = FormatBreakpointStateAttr<CsvEventsModuleCssAttr>;
 
+export type CsvSourceMode = 'file' | 'paste';
+
+export interface CsvSourceModeValue {
+  mode?: CsvSourceMode;
+}
+
 export interface CsvSourceValue {
   src?: string;
+}
+
+export interface CsvContentValue {
+  content?: string;
 }
 
 export interface EventSettingsValue {
@@ -68,42 +78,31 @@ export interface CsvEventsModuleAttrs extends InternalAttrs {
     };
   };
 
-  // CSV Source URL (upload field)
+  // CSV source mode selector (file | paste)
+  csvSourceMode?: {
+    innerContent?: FormatBreakpointStateAttr<CsvSourceModeValue>;
+  };
+
+  // CSV source URL (upload field, active when mode=file)
   csvSource?: {
     innerContent?: FormatBreakpointStateAttr<CsvSourceValue>;
+  };
+
+  // CSV pasted content (textarea + modal, active when mode=paste)
+  csvContent?: {
+    innerContent?: FormatBreakpointStateAttr<CsvContentValue>;
   };
 
   // Heading
   heading?: Element.Types.Title.Attributes;
 
   // Font decoration elements
-  dateText?: {
-    decoration?: {
-      font?: Element.Decoration.Font.Attributes;
-    };
-  };
-  titleText?: {
-    decoration?: {
-      font?: Element.Decoration.Font.Attributes;
-    };
-  };
-  metaText?: {
-    decoration?: {
-      font?: Element.Decoration.Font.Attributes;
-    };
-  };
-  descText?: {
-    decoration?: {
-      font?: Element.Decoration.Font.Attributes;
-    };
-  };
-  filterBtn?: {
-    decoration?: {
-      font?: Element.Decoration.Font.Attributes;
-    };
-  };
+  dateText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  titleText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  metaText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  descText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  filterBtn?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
 
-  // Event settings (all in one object with sub-values)
   eventSettings?: {
     innerContent?: FormatBreakpointStateAttr<EventSettingsValue>;
   };
@@ -111,7 +110,6 @@ export interface CsvEventsModuleAttrs extends InternalAttrs {
 
 export type CsvEventsModuleEditProps = ModuleEditProps<CsvEventsModuleAttrs>;
 
-// Event data structure from REST API
 export interface CsvEvent {
   date: string;
   time: string;

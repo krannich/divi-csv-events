@@ -1,15 +1,16 @@
 <?php
 /*
 Plugin Name: Divi CSV Events
-Plugin URI:
+Plugin URI:  https://github.com/krannich/divi-csv-events
 Description: Display events from a CSV file in four views (list, cards, table, slider) with period filters. Built for Divi 5.
-Version:     1.0.0
+Version:     1.1.0
 Author:      DiviSimpleEventList
 Author URI:
 License:     GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: divi-csv-events
 Domain Path: /languages
+Update URI:  https://github.com/krannich/divi-csv-events
 
 Divi CSV Events is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'DCSVE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DCSVE_URL', plugin_dir_url( __FILE__ ) );
 define( 'DCSVE_JSON_PATH', DCSVE_PATH . 'modules-json/' );
-define( 'DCSVE_VERSION', '1.0.0' );
+define( 'DCSVE_VERSION', '1.1.0' );
 
 /**
  * Requires Autoloader.
@@ -45,6 +46,19 @@ if ( ! file_exists( DCSVE_PATH . 'vendor/autoload.php' ) ) {
 }
 require DCSVE_PATH . 'vendor/autoload.php';
 require DCSVE_PATH . 'modules/Modules.php';
+
+/**
+ * Self-hosted update checker — queries GitHub Releases for new versions.
+ */
+if ( class_exists( '\\YahnisElsts\\PluginUpdateChecker\\v5\\PucFactory' ) ) {
+	$dcsve_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/krannich/divi-csv-events/',
+		__FILE__,
+		'divi-csv-events'
+	);
+	$dcsve_update_checker->setBranch( 'main' );
+	$dcsve_update_checker->getVcsApi()->enableReleaseAssets();
+}
 
 /**
  * Register REST API endpoint.

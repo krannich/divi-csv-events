@@ -37,8 +37,10 @@ trait RenderCallbackTrait {
 		// Enqueue frontend assets only when this module is on the page.
 		\dcsve_enqueue_frontend_assets();
 
-		// Get settings from attributes.
-		$csv_url    = $attrs['csvSource']['innerContent']['desktop']['value']['src'] ?? '';
+		// Get source-mode + data from attributes.
+		$source_mode  = $attrs['csvSourceMode']['innerContent']['desktop']['value']['mode'] ?? 'file';
+		$csv_url      = $attrs['csvSource']['innerContent']['desktop']['value']['src'] ?? '';
+		$csv_content  = $attrs['csvContent']['innerContent']['desktop']['value']['content'] ?? '';
 		$settings   = $attrs['eventSettings']['innerContent']['desktop']['value'] ?? [];
 
 		$period       = $settings['period'] ?? 'year';
@@ -59,17 +61,22 @@ trait RenderCallbackTrait {
 			]
 		);
 
-		// Parse CSV with server-side filtering (period + count).
-		// Period changes in the frontend trigger a REST API call to reload.
+		// Parse CSV based on source mode.
 		$events    = [];
 		$csv_error = '';
-		if ( ! empty( $csv_url ) ) {
-			$result = CsvParser::parse( $csv_url, $period, $count, $show_past, $period_count );
-			if ( isset( $result['error'] ) ) {
-				$csv_error = $result['error'];
-			} else {
-				$events = $result;
-			}
+
+		if ( 'paste' === $source_mode && ! empty( $csv_content ) ) {
+			$result = CsvParser::parseString( $csv_content, $period, $count, $show_past, $period_count );
+		} elseif ( 'file' === $source_mode && ! empty( $csv_url ) ) {
+			$result = CsvParser::parseUrl( $csv_url, $period, $count, $show_past, $period_count );
+		} else {
+			$result = [];
+		}
+
+		if ( isset( $result['error'] ) ) {
+			$csv_error = $result['error'];
+		} elseif ( is_array( $result ) ) {
+			$events = $result;
 		}
 
 		// Build inner HTML.
@@ -137,7 +144,15 @@ trait RenderCallbackTrait {
 		if ( $csv_error ) {
 			$content_html = '<div class="dcsve_csv_events__warning"><strong>' . esc_html__( 'CSV structure is invalid.', 'divi-csv-events' ) . '</strong><br>' . esc_html( $csv_error ) . '</div>';
 		} elseif ( empty( $events ) ) {
-			$content_html = '<div class="dcsve_csv_events__empty">' . esc_html__( 'No events found. Please upload a CSV file.', 'divi-csv-events' ) . '</div>';
+			$source_missing = ( 'paste' === $source_mode ) ? empty( $csv_content ) : empty( $csv_url );
+			if ( $source_missing ) {
+				$empty_msg = ( 'paste' === $source_mode )
+					? __( 'Please paste CSV data.', 'divi-csv-events' )
+					: __( 'Please upload a CSV file.', 'divi-csv-events' );
+			} else {
+				$empty_msg = __( 'No events found for the selected period.', 'divi-csv-events' );
+			}
+			$content_html = '<div class="dcsve_csv_events__empty">' . esc_html( $empty_msg ) . '</div>';
 		} else {
 			$content_html = self::render_events_html( $events, $view, $accent_color, $show_view_switch );
 		}
@@ -158,6 +173,7 @@ trait RenderCallbackTrait {
 		// Events data as JSON for client-side filtering.
 		$events_json = wp_json_encode( $events, JSON_HEX_TAG );
 		$config_json = wp_json_encode( [
+			'sourceMode'       => $source_mode,
 			'csvUrl'           => $csv_url,
 			'period'           => $period,
 			'periodCount'      => $period_count,

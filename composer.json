@@ -4,12 +4,24 @@
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "yahnis-elsts/plugin-update-checker": "^5.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
     },
     "autoload": {
         "psr-4": {
             "DiviCsvEvents\\": "modules/",
             "DiviCsvEvents\\Includes\\": "includes/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DiviCsvEvents\\Tests\\": "tests/phpunit/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testdox"
     }
 }

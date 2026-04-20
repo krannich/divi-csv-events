@@ -1,6 +1,6 @@
 <?php
 /**
- * CSV Parser - reads, parses and filters events from a CSV file.
+ * CSV Parser - reads, parses and filters events.
  *
  * Shared between REST API endpoint and PHP frontend rendering.
  *
@@ -11,312 +11,267 @@
 namespace DiviCsvEvents\Includes;
 
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'Direct access forbidden.' );
+    die( 'Direct access forbidden.' );
 }
 
 class CsvParser {
 
-	/**
-	 * Parse a CSV file and return filtered events.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $csv_url   URL of the CSV file (Media Library or external).
-	 * @param string $period    Filter period: week, month, quarter, year, all.
-	 * @param int    $count     Max events to return (0 = all).
-	 * @param bool   $show_past Whether to include past events.
-	 *
-	 * @return array Array of event arrays.
-	 */
-	/**
-	 * Accepted CSV header columns (case-insensitive).
-	 * Supports both English and German headers for DE-market compatibility.
-	 */
-	private static $accepted_headers = [
-		[ 'date', 'datum' ],
-		[ 'time', 'uhrzeit' ],
-		[ 'title', 'titel' ],
-		[ 'location', 'ort' ],
-		[ 'description', 'beschreibung' ],
-	];
+    private static $accepted_headers = [
+        [ 'date', 'datum' ],
+        [ 'time', 'uhrzeit' ],
+        [ 'title', 'titel' ],
+        [ 'location', 'ort' ],
+        [ 'description', 'beschreibung' ],
+    ];
 
-	public static function parse( $csv_url, $period = 'year', $count = 0, $show_past = false, $period_count = 1 ) {
-		$result = self::load_csv_cached( $csv_url );
+    /**
+     * Parse from a CSV file URL (reads file, caches, filters).
+     *
+     * @return array Events or ['error' => message].
+     */
+    public static function parseUrl( $csv_url, $period = 'year', $count = 0, $show_past = false, $period_count = 1 ) {
+        $result = self::load_csv_cached( $csv_url );
 
-		// If load_csv returned an error, pass it through.
-		if ( isset( $result['error'] ) ) {
-			return $result;
-		}
+        if ( isset( $result['error'] ) ) {
+            return $result;
+        }
 
-		$events = $result;
+        return self::apply_filters( $result, $period, $count, $show_past, $period_count );
+    }
 
-		if ( empty( $events ) ) {
-			return [];
-		}
+    /**
+     * Parse from a CSV text string (no file I/O, content-hash caching).
+     *
+     * @return array Events or ['error' => message].
+     */
+    public static function parseString( $csv_text, $period = 'year', $count = 0, $show_past = false, $period_count = 1 ) {
+        // Cache stores pre-filter events — filter params (period/count/show_past) apply on each call, so variations don't bust the hit rate.
+        if ( '' === trim( (string) $csv_text ) ) {
+            return [];
+        }
 
-		$events = self::filter_events( $events, $period, $show_past, $period_count );
+        $cache_key = 'dcsve_csv_str_' . md5( $csv_text );
+        $cached    = function_exists( 'get_transient' ) ? get_transient( $cache_key ) : false;
 
-		if ( $count > 0 ) {
-			$events = array_slice( $events, 0, $count );
-		}
+        if ( false === $cached ) {
+            $cached = self::parseCsvText( $csv_text );
+            if ( function_exists( 'set_transient' ) && ! isset( $cached['error'] ) ) {
+                set_transient( $cache_key, $cached, 5 * MINUTE_IN_SECONDS );
+            }
+        }
 
-		return $events;
-	}
+        if ( isset( $cached['error'] ) ) {
+            return $cached;
+        }
 
-	/**
-	 * Validate CSV header row.
-	 *
-	 * @param array $header The header row from fgetcsv.
-	 * @return string Error message or empty string if valid.
-	 */
-	private static function validate_header( $header ) {
-		if ( ! $header || count( $header ) < 3 ) {
-			return 'Invalid CSV file: header row must have at least 3 columns.';
-		}
+        return self::apply_filters( $cached, $period, $count, $show_past, $period_count );
+    }
 
-		$normalized = array_map( function ( $col ) {
-			return strtolower( trim( $col ) );
-		}, $header );
+    /**
+     * Pure text → events. No caching, no filtering. Returns raw events or ['error' => ...].
+     *
+     * Used directly from unit tests and as the shared backend of parseUrl / parseString.
+     */
+    public static function parseCsvText( $csv_text ) {
+        $csv_text = (string) $csv_text;
 
-		$accepted = self::$accepted_headers;
-		$missing  = [];
+        if ( str_starts_with( $csv_text, "\xEF\xBB\xBF" ) ) {
+            $csv_text = substr( $csv_text, 3 );
+        }
 
-		// Check first 3 required columns: Date/Datum, Time/Uhrzeit, Title/Titel.
-		for ( $i = 0; $i < 3; $i++ ) {
-			if ( ! isset( $normalized[ $i ] ) || ! in_array( $normalized[ $i ], $accepted[ $i ], true ) ) {
-				$missing[] = implode( '/', array_map( 'ucfirst', $accepted[ $i ] ) );
-			}
-		}
+        $csv_text = str_replace( [ "\r\n", "\r" ], "\n", $csv_text );
+        $lines    = explode( "\n", $csv_text );
+        $lines    = array_values( array_filter( $lines, static fn( $l ) => '' !== trim( $l ) ) );
 
-		if ( ! empty( $missing ) ) {
-			$found = implode( ';', array_map( 'trim', $header ) );
-			return sprintf(
-				'Invalid CSV header. Expected: Date/Datum;Time/Uhrzeit;Title/Titel;Location/Ort;Description/Beschreibung — Found: %s',
-				$found
-			);
-		}
+        if ( empty( $lines ) ) {
+            return [];
+        }
 
-		return '';
-	}
+        $header = str_getcsv( array_shift( $lines ), ';', '"', '\\' );
+        $header_error = self::validate_header( $header );
+        if ( '' !== $header_error ) {
+            return [ 'error' => $header_error ];
+        }
 
-	/**
-	 * Load CSV with transient caching (5 min TTL).
-	 * Cache key includes file modification time so edits invalidate immediately.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $csv_url URL of the CSV file.
-	 *
-	 * @return array Raw events array, sorted chronologically.
-	 */
-	private static function load_csv_cached( $csv_url ) {
-		if ( empty( $csv_url ) ) {
-			return [];
-		}
+        $events = [];
+        foreach ( $lines as $line ) {
+            $row = str_getcsv( $line, ';', '"', '\\' );
+            if ( count( $row ) < 3 ) {
+                continue;
+            }
 
-		$csv_path = self::resolve_local_path( $csv_url );
-		if ( ! $csv_path || ! file_exists( $csv_path ) ) {
-			return [];
-		}
+            $date        = trim( $row[0] ?? '' );
+            $time        = trim( $row[1] ?? '' );
+            $title       = trim( $row[2] ?? '' );
+            $location    = trim( $row[3] ?? '' );
+            $description = trim( $row[4] ?? '' );
 
-		$cache_key = 'dcsve_csv_' . md5( $csv_url . filemtime( $csv_path ) );
-		$cached    = get_transient( $cache_key );
+            if ( '' === $date || '' === $title ) {
+                continue;
+            }
+            if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+                continue;
+            }
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+            $events[] = compact( 'date', 'time', 'title', 'location', 'description' );
+        }
 
-		$result = self::load_csv( $csv_path );
-		if ( ! isset( $result['error'] ) ) {
-			set_transient( $cache_key, $result, 5 * MINUTE_IN_SECONDS );
-		}
+        usort( $events, static fn( $a, $b ) =>
+            strcmp( $a['date'] . ' ' . $a['time'], $b['date'] . ' ' . $b['time'] )
+        );
 
-		return $result;
-	}
+        return $events;
+    }
 
-	private static function load_csv( $csv_path ) {
-		$events = [];
-		$handle = fopen( $csv_path, 'r' );
+    private static function validate_header( $header ) {
+        if ( ! $header || count( $header ) < 3 ) {
+            return 'Invalid CSV header: header row must have at least 3 columns.';
+        }
 
-		if ( ! $handle ) {
-			return [];
-		}
+        $normalized = array_map( static fn( $c ) => strtolower( trim( (string) $c ) ), $header );
+        $missing    = [];
 
-		// Remove BOM if present.
-		$bom = fread( $handle, 3 );
-		if ( "\xEF\xBB\xBF" !== $bom ) {
-			rewind( $handle );
-		}
+        for ( $i = 0; $i < 3; $i++ ) {
+            if ( ! isset( $normalized[ $i ] ) || ! in_array( $normalized[ $i ], self::$accepted_headers[ $i ], true ) ) {
+                $missing[] = implode( '/', array_map( 'ucfirst', self::$accepted_headers[ $i ] ) );
+            }
+        }
 
-		// Read and validate header row.
-		$header = fgetcsv( $handle, 0, ';' );
-		if ( ! $header ) {
-			fclose( $handle );
-			return [];
-		}
+        if ( ! empty( $missing ) ) {
+            $found = implode( ';', array_map( static fn( $c ) => trim( (string) $c ), $header ) );
+            return sprintf(
+                'Invalid CSV header. Expected: Date/Datum;Time/Uhrzeit;Title/Titel;Location/Ort;Description/Beschreibung — Found: %s',
+                $found
+            );
+        }
 
-		$header_error = self::validate_header( $header );
-		if ( $header_error ) {
-			fclose( $handle );
-			return [ 'error' => $header_error ];
-		}
+        return '';
+    }
 
-		while ( ( $row = fgetcsv( $handle, 0, ';' ) ) !== false ) {
-			if ( count( $row ) < 3 ) {
-				continue;
-			}
+    private static function apply_filters( array $events, $period, $count, $show_past, $period_count ) {
+        if ( empty( $events ) ) {
+            return [];
+        }
 
-			$date        = trim( $row[0] ?? '' );
-			$time        = trim( $row[1] ?? '' );
-			$title       = trim( $row[2] ?? '' );
-			$location    = trim( $row[3] ?? '' );
-			$description = trim( $row[4] ?? '' );
+        $events = self::filter_events( $events, $period, $show_past, $period_count );
 
-			if ( empty( $date ) || empty( $title ) ) {
-				continue;
-			}
+        if ( $count > 0 ) {
+            $events = array_slice( $events, 0, $count );
+        }
 
-			// Validate date format (YYYY-MM-DD).
-			if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
-				continue;
-			}
+        return $events;
+    }
 
-			$events[] = [
-				'date'        => $date,
-				'time'        => $time,
-				'title'       => $title,
-				'location'    => $location,
-				'description' => $description,
-			];
-		}
+    // --- URL-based helpers ---
 
-		fclose( $handle );
+    private static function load_csv_cached( $csv_url ) {
+        if ( empty( $csv_url ) ) {
+            return [];
+        }
 
-		// Sort chronologically.
-		usort( $events, function ( $a, $b ) {
-			return strcmp( $a['date'] . ' ' . $a['time'], $b['date'] . ' ' . $b['time'] );
-		} );
+        $csv_path = self::resolve_local_path( $csv_url );
+        if ( ! $csv_path || ! file_exists( $csv_path ) ) {
+            return [];
+        }
 
-		return $events;
-	}
+        $cache_key = 'dcsve_csv_' . md5( $csv_url . filemtime( $csv_path ) );
+        $cached    = get_transient( $cache_key );
 
-	/**
-	 * Resolve a URL to a local file path.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $url File URL.
-	 *
-	 * @return string|false Local file path or false.
-	 */
-	private static function resolve_local_path( $url ) {
-		// Try to get attachment ID from URL.
-		$attachment_id = attachment_url_to_postid( $url );
+        if ( false !== $cached ) {
+            return $cached;
+        }
 
-		if ( $attachment_id ) {
-			$path = get_attached_file( $attachment_id );
-			if ( $path && file_exists( $path ) ) {
-				return $path;
-			}
-		}
+        $raw    = file_get_contents( $csv_path );
+        $result = false === $raw ? [] : self::parseCsvText( $raw );
 
-		// Fallback: convert upload URL to path.
-		$upload_dir  = wp_upload_dir();
-		$upload_url  = $upload_dir['baseurl'];
-		$upload_path = $upload_dir['basedir'];
+        if ( ! isset( $result['error'] ) ) {
+            set_transient( $cache_key, $result, 5 * MINUTE_IN_SECONDS );
+        }
 
-		if ( str_starts_with( $url, $upload_url ) ) {
-			$relative = substr( $url, strlen( $upload_url ) );
-			$path     = $upload_path . $relative;
-			if ( file_exists( $path ) ) {
-				return $path;
-			}
-		}
+        return $result;
+    }
 
-		return false;
-	}
+    private static function resolve_local_path( $url ) {
+        $attachment_id = attachment_url_to_postid( $url );
+        if ( $attachment_id ) {
+            $path = get_attached_file( $attachment_id );
+            if ( $path && file_exists( $path ) ) {
+                return $path;
+            }
+        }
 
-	/**
-	 * Filter events by period and past-event setting.
-	 *
-	 * Uses date strings (YYYY-MM-DD) for comparison to avoid timezone issues.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array  $events   Events array.
-	 * @param string $period   Filter period.
-	 * @param bool   $show_past Whether to include past events.
-	 *
-	 * @return array Filtered events.
-	 */
-	private static function filter_events( $events, $period, $show_past, $period_count = 1 ) {
-		$today = wp_date( 'Y-m-d' );
+        $upload_dir  = wp_upload_dir();
+        $upload_url  = $upload_dir['baseurl'];
+        $upload_path = $upload_dir['basedir'];
 
-		// Filter out past events (before today).
-		if ( ! $show_past ) {
-			$events = array_filter( $events, function ( $e ) use ( $today ) {
-				return $e['date'] >= $today;
-			} );
-			$events = array_values( $events );
-		}
+        if ( str_starts_with( $url, $upload_url ) ) {
+            $relative = substr( $url, strlen( $upload_url ) );
+            $path     = $upload_path . $relative;
+            if ( file_exists( $path ) ) {
+                return $path;
+            }
+        }
 
-		if ( 'all' === $period ) {
-			return $events;
-		}
+        return false;
+    }
 
-		// Calendar period boundaries with period_count support.
-		$year         = (int) wp_date( 'Y' );
-		$month        = (int) wp_date( 'n' );
-		$period_count = max( 1, (int) $period_count );
+    private static function filter_events( $events, $period, $show_past, $period_count = 1 ) {
+        $today = wp_date( 'Y-m-d' );
 
-		switch ( $period ) {
-			case 'week':
-				// Current week + (period_count - 1) additional weeks.
-				$day_of_week = (int) wp_date( 'N' ); // 1=Mon, 7=Sun
-				$monday     = wp_date( 'Y-m-d', strtotime( '-' . ( $day_of_week - 1 ) . ' days' ) );
-				$end_offset = ( $period_count * 7 ) - 1;
-				$end_date   = wp_date( 'Y-m-d', strtotime( $monday . ' +' . $end_offset . ' days' ) );
-				$start_date = $monday;
-				break;
+        if ( ! $show_past ) {
+            $events = array_filter( $events, static fn( $e ) => $e['date'] >= $today );
+            $events = array_values( $events );
+        }
 
-			case 'month':
-				// Current month + (period_count - 1) additional months.
-				$start_date = sprintf( '%04d-%02d-01', $year, $month );
-				$end_month  = $month + $period_count - 1;
-				$end_year   = $year;
-				if ( $end_month > 12 ) {
-					$end_year  += (int) floor( ( $end_month - 1 ) / 12 );
-					$end_month  = ( ( $end_month - 1 ) % 12 ) + 1;
-				}
-				$end_date = wp_date( 'Y-m-t', mktime( 0, 0, 0, $end_month, 1, $end_year ) );
-				break;
+        if ( 'all' === $period ) {
+            return $events;
+        }
 
-			case 'quarter':
-				// Current quarter + (period_count - 1) additional quarters.
-				$q_start_month = ( (int) floor( ( $month - 1 ) / 3 ) ) * 3 + 1;
-				$q_end_month   = $q_start_month + ( $period_count * 3 ) - 1;
-				$q_end_year    = $year;
-				if ( $q_end_month > 12 ) {
-					$q_end_year  += (int) floor( ( $q_end_month - 1 ) / 12 );
-					$q_end_month  = ( ( $q_end_month - 1 ) % 12 ) + 1;
-				}
-				$start_date = sprintf( '%04d-%02d-01', $year, $q_start_month );
-				$end_date   = wp_date( 'Y-m-t', mktime( 0, 0, 0, $q_end_month, 1, $q_end_year ) );
-				break;
+        $year         = (int) wp_date( 'Y' );
+        $month        = (int) wp_date( 'n' );
+        $period_count = max( 1, (int) $period_count );
 
-			case 'year':
-			default:
-				// Current year + (period_count - 1) additional years.
-				$start_date = sprintf( '%04d-01-01', $year );
-				$end_date   = sprintf( '%04d-12-31', $year + $period_count - 1 );
-				break;
-		}
+        switch ( $period ) {
+            case 'week':
+                $day_of_week = (int) wp_date( 'N' );
+                $monday      = wp_date( 'Y-m-d', strtotime( '-' . ( $day_of_week - 1 ) . ' days' ) );
+                $end_offset  = ( $period_count * 7 ) - 1;
+                $end_date    = wp_date( 'Y-m-d', strtotime( $monday . ' +' . $end_offset . ' days' ) );
+                $start_date  = $monday;
+                break;
+            case 'month':
+                $start_date = sprintf( '%04d-%02d-01', $year, $month );
+                $end_month  = $month + $period_count - 1;
+                $end_year   = $year;
+                if ( $end_month > 12 ) {
+                    $end_year  += (int) floor( ( $end_month - 1 ) / 12 );
+                    $end_month  = ( ( $end_month - 1 ) % 12 ) + 1;
+                }
+                $end_date = wp_date( 'Y-m-t', mktime( 0, 0, 0, $end_month, 1, $end_year ) );
+                break;
+            case 'quarter':
+                $q_start_month = ( (int) floor( ( $month - 1 ) / 3 ) ) * 3 + 1;
+                $q_end_month   = $q_start_month + ( $period_count * 3 ) - 1;
+                $q_end_year    = $year;
+                if ( $q_end_month > 12 ) {
+                    $q_end_year  += (int) floor( ( $q_end_month - 1 ) / 12 );
+                    $q_end_month  = ( ( $q_end_month - 1 ) % 12 ) + 1;
+                }
+                $start_date = sprintf( '%04d-%02d-01', $year, $q_start_month );
+                $end_date   = wp_date( 'Y-m-t', mktime( 0, 0, 0, $q_end_month, 1, $q_end_year ) );
+                break;
+            case 'year':
+            default:
+                $start_date = sprintf( '%04d-01-01', $year );
+                $end_date   = sprintf( '%04d-12-31', $year + $period_count - 1 );
+                break;
+        }
 
-		// Apply show_past: if off, don't show events before today even if in range.
-		$effective_start = $show_past ? $start_date : max( $start_date, $today );
+        $effective_start = $show_past ? $start_date : max( $start_date, $today );
 
-		return array_values( array_filter( $events, function ( $e ) use ( $effective_start, $end_date ) {
-			return $e['date'] >= $effective_start && $e['date'] <= $end_date;
-		} ) );
-	}
+        return array_values( array_filter(
+            $events,
+            static fn( $e ) => $e['date'] >= $effective_start && $e['date'] <= $end_date
+        ) );
+    }
 }
