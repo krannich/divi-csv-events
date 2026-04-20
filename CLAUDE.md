@@ -99,22 +99,23 @@ Divi 5 native Font-Decoration-Gruppen (jeweils mit Font-Family, Size, Weight, Co
 ## CSV-Format
 
 ```csv
-Datum;Uhrzeit;Titel;Ort;Beschreibung
-2026-06-13;08:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen
+Datum;Uhrzeit;Titel;Ort;Beschreibung;Adresse
+2026-06-13;17:00-03:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen;Hauptstr. 1, 29640 Schneverdingen
 ```
 
 Alternativ mit englischen Headern:
 ```csv
-Date;Time;Title;Location;Description
-2026-06-13;08:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen
+Date;Time;Title;Location;Description;Address
+2026-06-13;17:00-03:00;Schützenfest Tag 1;Festplatz;Festumzug und Königsschießen;Hauptstr. 1, 29640 Schneverdingen
 ```
 
 - Semikolon-getrennt (Excel DE-kompatibel)
 - UTF-8, BOM wird toleriert
-- Header: Deutsch (Datum;Uhrzeit;Titel;Ort;Beschreibung) oder Englisch (Date;Time;Title;Location;Description)
+- Header: Deutsch (Datum;Uhrzeit;Titel;Ort;Beschreibung;Adresse) oder Englisch (Date;Time;Title;Location;Description;Address)
 - Datum im Format YYYY-MM-DD
-- Uhrzeit im Format HH:MM
-- Beschreibung ist optional
+- Uhrzeit: `HH:MM` oder `HH:MM-HH:MM` (Range). Overnight (Ende < Start) wird automatisch auf den Folgetag gerollt.
+- Beschreibung und Adresse sind optional
+- 5-Spalten-CSVs (ohne Adresse) bleiben gültig (Backward-Compat seit v1.2.0)
 
 ## REST API Endpoint
 

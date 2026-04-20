@@ -148,6 +148,18 @@ Diese Logik wird aufgeteilt in:
 - `frontend.css` (Styles)
 - `edit.tsx` (Builder-Preview als React-Portierung der Render-Logik)
 
+## Schema.org Structured Data (v1.2.0+)
+
+Events werden als JSON-LD (`<script type="application/ld+json">`) am Ende des Module-HTMLs ausgegeben, mit einem Schema.org `@graph` von `Event`-Objekten. Google Rich Results und LLMs (ChatGPT/Claude/Gemini) konsumieren diese Daten strukturiert.
+
+- **Scope:** Genau die server-gerenderte Event-Liste (Period/Count/show_past-Filter respektiert). Keine Divergenz zwischen sichtbarem Content und Schema.
+- **Organizer:** Optional pro Modul (`organizerName` + `organizerUrl` in den Settings). Wird als `Organization` emittiert wenn Name gesetzt.
+- **Address-Parsing:** Regex `/^(.+?),\s*(\d{5})\s+(.+)$/` extrahiert Straße/PLZ/Stadt; Fallback auf `streetAddress`. `addressCountry` hart auf `DE`.
+- **Zeit-Logik:** `HH:MM-HH:MM` → Range mit Overnight-Detection (Ende < Start → Folgetag). Einzelzeit ohne Range → +3h Default-Dauer. Keine Uhrzeit → nur Datum.
+- **Toggle:** Über `schemaEnabled` (Default on) abschaltbar, falls dieselbe Seite anderswo Event-Schemas ausgibt.
+- **XSS-Schutz:** `JSON_HEX_TAG` in der Encodierung verhindert `</script>`-Breakout bei böswilligen Event-Strings.
+- **Implementierung:** `includes/SchemaBuilder.php` (pure Klasse, 18 Unit-Tests).
+
 ## Roadmap
 
 ### Phase 1 — MVP (Marketplace Launch)
@@ -170,6 +182,6 @@ Diese Logik wird aufgeteilt in:
 ### Phase 3 — Premium
 - Wiederkehrende Termine (RRULE-Syntax oder einfache Wiederholung)
 - Countdown-Widget zum nächsten Event (eigenständiges Mini-Modul)
-- Schema.org Event Markup (JSON-LD)
+- ~~Schema.org Event Markup (JSON-LD)~~ → in v1.2.0 umgesetzt
 - Mehrsprachigkeit (Polylang/WPML-kompatibel)
 - Custom Fields / zusätzliche CSV-Spalten

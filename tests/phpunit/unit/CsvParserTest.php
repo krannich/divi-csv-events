@@ -97,4 +97,90 @@ final class CsvParserTest extends TestCase {
 
         $this->assertCount( 1, $events );
     }
+
+    public function test_parses_6_column_csv_with_address(): void {
+        $csv = "Date;Time;Title;Location;Description;Address\n"
+             . "2026-06-13;08:00;Festival;Hall;Desc;Hauptstr. 1, 29640 Schneverdingen\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertCount( 1, $events );
+        $this->assertSame( 'Hauptstr. 1, 29640 Schneverdingen', $events[0]['address'] );
+    }
+
+    public function test_parses_6_column_csv_with_german_headers(): void {
+        $csv = "Datum;Uhrzeit;Titel;Ort;Beschreibung;Adresse\n"
+             . "2026-06-13;08:00;Fest;Halle;Beschr;Am Markt 5, 29640 Schneverdingen\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertCount( 1, $events );
+        $this->assertSame( 'Am Markt 5, 29640 Schneverdingen', $events[0]['address'] );
+    }
+
+    public function test_5_column_csv_still_works_address_empty(): void {
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;08:00;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertCount( 1, $events );
+        $this->assertArrayHasKey( 'address', $events[0] );
+        $this->assertSame( '', $events[0]['address'] );
+    }
+
+    public function test_time_single_produces_start_only(): void {
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;08:00;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '08:00', $events[0]['start_time'] );
+        $this->assertSame( '',      $events[0]['end_time'] );
+    }
+
+    public function test_time_range_splits_start_and_end(): void {
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;17:00-22:00;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '17:00', $events[0]['start_time'] );
+        $this->assertSame( '22:00', $events[0]['end_time'] );
+        $this->assertSame( '17:00-22:00', $events[0]['time'] );
+    }
+
+    public function test_time_range_overnight_still_produces_both_times(): void {
+        // Parser does not compute the next-day date; SchemaBuilder does.
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;17:00-03:00;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '17:00', $events[0]['start_time'] );
+        $this->assertSame( '03:00', $events[0]['end_time'] );
+    }
+
+    public function test_time_empty_both_empty(): void {
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['start_time'] );
+        $this->assertSame( '', $events[0]['end_time'] );
+    }
+
+    public function test_time_invalid_string_kept_as_start(): void {
+        // Non-HH:MM input is preserved in start_time without crashing.
+        // Schema emission layer decides whether to use it.
+        $csv = "Date;Time;Title;Location;Description\n"
+             . "2026-06-13;abc;X;Y;Z\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertCount( 1, $events );
+        $this->assertSame( 'abc', $events[0]['start_time'] );
+        $this->assertSame( '',    $events[0]['end_time'] );
+    }
 }

@@ -3,7 +3,7 @@
 Plugin Name: Divi CSV Events
 Plugin URI:  https://github.com/krannich/divi-csv-events
 Description: Display events from a CSV file in four views (list, cards, table, slider) with period filters. Built for Divi 5.
-Version:     1.1.0
+Version:     1.2.0
 Author:      DiviSimpleEventList
 Author URI:
 License:     GPL2
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'DCSVE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DCSVE_URL', plugin_dir_url( __FILE__ ) );
 define( 'DCSVE_JSON_PATH', DCSVE_PATH . 'modules-json/' );
-define( 'DCSVE_VERSION', '1.1.0' );
+define( 'DCSVE_VERSION', '1.2.0' );
 
 /**
  * Requires Autoloader.

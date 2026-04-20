@@ -17,5 +17,8 @@ vendor
 # phpunit
 .phpunit.cache
 
+# release ZIPs (built via npm run zip)
+*.zip
+
 # scaffold (not needed after setup)
 _scaffold

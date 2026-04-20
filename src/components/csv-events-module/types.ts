@@ -45,6 +45,9 @@ export interface EventSettingsValue {
   showFilter?: string;
   showViewSwitcher?: string;
   accentColor?: string;
+  organizerName?: string;
+  organizerUrl?: string;
+  schemaEnabled?: string;
 }
 
 export interface CsvEventsModuleAttrs extends InternalAttrs {
@@ -113,7 +116,10 @@ export type CsvEventsModuleEditProps = ModuleEditProps<CsvEventsModuleAttrs>;
 export interface CsvEvent {
   date: string;
   time: string;
+  start_time?: string;
+  end_time?: string;
   title: string;
   location: string;
   description: string;
+  address?: string;
 }

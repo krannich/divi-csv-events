@@ -22,6 +22,7 @@ class CsvParser {
         [ 'title', 'titel' ],
         [ 'location', 'ort' ],
         [ 'description', 'beschreibung' ],
+        [ 'address', 'adresse' ],   // optional 6th column (v1.2.0+)
     ];
 
     /**
@@ -105,6 +106,7 @@ class CsvParser {
             $title       = trim( $row[2] ?? '' );
             $location    = trim( $row[3] ?? '' );
             $description = trim( $row[4] ?? '' );
+            $address     = trim( $row[5] ?? '' );
 
             if ( '' === $date || '' === $title ) {
                 continue;
@@ -113,7 +115,12 @@ class CsvParser {
                 continue;
             }
 
-            $events[] = compact( 'date', 'time', 'title', 'location', 'description' );
+            [ $start_time, $end_time ] = self::parse_time_field( $time );
+
+            $events[] = compact(
+                'date', 'time', 'start_time', 'end_time',
+                'title', 'location', 'description', 'address'
+            );
         }
 
         usort( $events, static fn( $a, $b ) =>
@@ -121,6 +128,38 @@ class CsvParser {
         );
 
         return $events;
+    }
+
+    /**
+     * Split the raw time string into start_time and end_time.
+     *
+     * Accepts:
+     *   "HH:MM"          → start only, end empty
+     *   "HH:MM-HH:MM"    → both set; overnight detected later by caller via string compare
+     *   ""               → both empty
+     *   anything else    → kept as start_time, end empty (emission layer handles)
+     */
+    private static function parse_time_field( string $time ): array {
+        $time = trim( $time );
+        if ( '' === $time ) {
+            return [ '', '' ];
+        }
+
+        if ( preg_match( '/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/', $time, $m ) ) {
+            return [ self::pad_hhmm( $m[1] ), self::pad_hhmm( $m[2] ) ];
+        }
+
+        return [ $time, '' ];
+    }
+
+    /**
+     * Left-pad single-digit hour: "9:00" → "09:00". Leaves "09:00" unchanged.
+     */
+    private static function pad_hhmm( string $v ): string {
+        if ( preg_match( '/^(\d):(\d{2})$/', $v, $m ) ) {
+            return '0' . $m[1] . ':' . $m[2];
+        }
+        return $v;
     }
 
     private static function validate_header( $header ) {

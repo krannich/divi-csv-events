@@ -21,6 +21,15 @@ const getMonthsShort = () => ['', __('Jan', 'divi-csv-events'), __('Feb', 'divi-
 const getMonthsLong  = () => ['', __('Januar', 'divi-csv-events'), __('Februar', 'divi-csv-events'), __('März', 'divi-csv-events'), __('April', 'divi-csv-events'), __('Mai', 'divi-csv-events'), __('Juni', 'divi-csv-events'), __('Juli', 'divi-csv-events'), __('August', 'divi-csv-events'), __('September', 'divi-csv-events'), __('Oktober', 'divi-csv-events'), __('November', 'divi-csv-events'), __('Dezember', 'divi-csv-events')];
 const getWdays       = () => [__('So', 'divi-csv-events'), __('Mo', 'divi-csv-events'), __('Di', 'divi-csv-events'), __('Mi', 'divi-csv-events'), __('Do', 'divi-csv-events'), __('Fr', 'divi-csv-events'), __('Sa', 'divi-csv-events')];
 
+function formatTime(e: CsvEvent): string {
+  const start = e.start_time || '';
+  const end   = e.end_time   || '';
+  if (start && end) return `${start}\u2013${end} Uhr`;  // en-dash
+  if (start)       return `${start} Uhr`;
+  if (e.time)     return `${e.time} Uhr`;              // legacy fallback
+  return '';
+}
+
 function parseDate(datum: string, zeit?: string): Date {
   return new Date(datum + 'T' + (zeit || '00:00') + ':00');
 }
@@ -58,7 +67,7 @@ const ListView = ({ events }: { events: CsvEvent[] }): ReactElement => {
               <div className="dcsve_csv_events__list-item" key={i}>
                 <div className="dcsve_csv_events__list-date dcsve_csv_events__el-date">
                   {fmtDate(d)}
-                  {e.time && <strong>{e.time} Uhr</strong>}
+                  {(() => { const t = formatTime(e); return t && <strong>{t}</strong>; })()}
                 </div>
                 <div className="dcsve_csv_events__list-body">
                   <div className="dcsve_csv_events__list-title dcsve_csv_events__el-title">{e.title}</div>
@@ -97,7 +106,7 @@ const CardsView = ({ events }: { events: CsvEvent[] }): ReactElement => {
                   <div className="dcsve_csv_events__card-body">
                     <div className="dcsve_csv_events__card-title dcsve_csv_events__el-title">{e.title}</div>
                     <div className="dcsve_csv_events__card-meta dcsve_csv_events__el-meta">
-                      {e.time ? `${e.time} Uhr · ` : ''}{e.location}
+                      {(() => { const t = formatTime(e); return t ? `${t} · ` : ''; })()}{e.location}
                     </div>
                     {e.description && <div className="dcsve_csv_events__card-desc dcsve_csv_events__el-desc">{e.description}</div>}
                   </div>
@@ -129,7 +138,7 @@ const TableView = ({ events }: { events: CsvEvent[] }): ReactElement => {
       result.push(
         <tr key={`${e.date}-${e.time}-${i}`}>
           <td className="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">{fmtDate(d)}</td>
-          <td className="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">{e.time}</td>
+          <td className="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">{formatTime(e).replace(/\sUhr$/, '')}</td>
           <td className="dcsve_csv_events__table-title dcsve_csv_events__el-title">{e.title}</td>
           <td className="dcsve_csv_events__el-meta">{e.location}</td>
           <td className="dcsve_csv_events__table-desc dcsve_csv_events__el-desc">{e.description}</td>
@@ -175,7 +184,7 @@ const SliderView = ({ events }: { events: CsvEvent[] }): ReactElement => (
                 <div className="dcsve_csv_events__slider-title dcsve_csv_events__el-title">{e.title}</div>
               </div>
               <div className="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">
-                {e.time ? `${e.time} Uhr · ` : ''}{e.location}
+                {(() => { const t = formatTime(e); return t ? `${t} · ` : ''; })()}{e.location}
               </div>
               {e.description && <div className="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">{e.description}</div>}
             </div>

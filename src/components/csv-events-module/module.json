@@ -409,7 +409,10 @@
               "view": "list",
               "showFilter": "on",
               "showViewSwitcher": "on",
-              "accentColor": "#2e7d32"
+              "accentColor": "#2e7d32",
+              "organizerName": "",
+              "organizerUrl": "",
+              "schemaEnabled": "on"
             }
           }
         }
@@ -592,6 +595,60 @@
               },
               "component": {
                 "name": "divi/color-picker",
+                "type": "field"
+              }
+            },
+            "organizerName": {
+              "groupSlug": "contentEventSettings",
+              "priority": 80,
+              "render": true,
+              "subName": "organizerName",
+              "label": "Organizer Name",
+              "description": "Name of the organization hosting these events (for Schema.org structured data). Leave empty to omit organizer from schema.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/text",
+                "type": "field"
+              }
+            },
+            "organizerUrl": {
+              "groupSlug": "contentEventSettings",
+              "priority": 85,
+              "render": true,
+              "subName": "organizerUrl",
+              "label": "Organizer URL",
+              "description": "Website of the organizer (optional, used in Schema.org output).",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/text",
+                "type": "field"
+              }
+            },
+            "schemaEnabled": {
+              "groupSlug": "contentEventSettings",
+              "priority": 90,
+              "render": true,
+              "subName": "schemaEnabled",
+              "label": "Output Schema.org Data",
+              "description": "Embed event data as JSON-LD for search engines and AI. Disable if the page already outputs event schema elsewhere.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
                 "type": "field"
               }
             }

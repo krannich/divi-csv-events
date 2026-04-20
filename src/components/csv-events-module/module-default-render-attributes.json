@@ -49,7 +49,10 @@
           "view": "list",
           "showFilter": "on",
           "showViewSwitcher": "on",
-          "accentColor": "#2e7d32"
+          "accentColor": "#2e7d32",
+          "organizerName": "",
+          "organizerUrl": "",
+          "schemaEnabled": "on"
         }
       }
     }

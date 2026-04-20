@@ -18,6 +18,7 @@ use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\Packages\Module\Options\Element\ElementComponents;
 use DiviCsvEvents\CsvEventsModule\CsvEventsModule;
 use DiviCsvEvents\Includes\CsvParser;
+use DiviCsvEvents\Includes\SchemaBuilder;
 
 trait RenderCallbackTrait {
 
@@ -53,6 +54,10 @@ trait RenderCallbackTrait {
 		$show_view_switch = self::is_on( $settings['showViewSwitcher'] ?? 'on' );
 		$accent_color_raw = $settings['accentColor'] ?? '#2e7d32';
 		$accent_color     = preg_match( '/^#([0-9a-fA-F]{3}){1,2}$/', $accent_color_raw ) ? $accent_color_raw : '#2e7d32';
+
+		$organizer_name = (string) ( $settings['organizerName'] ?? '' );
+		$organizer_url  = (string) ( $settings['organizerUrl']  ?? '' );
+		$schema_enabled = self::is_on( $settings['schemaEnabled'] ?? 'on' );
 
 		// Heading.
 		$heading = $elements->render(
@@ -188,6 +193,18 @@ trait RenderCallbackTrait {
 		$script_tag = '<script type="application/json" class="dcsve-data">' . $events_json . '</script>';
 		$config_tag = '<script type="application/json" class="dcsve-config">' . $config_json . '</script>';
 
+		$schema_tag = '';
+		if ( $schema_enabled && ! empty( $events ) ) {
+			$schema_json = SchemaBuilder::build_json_ld(
+				$events,
+				[ 'name' => $organizer_name, 'url' => $organizer_url ],
+				wp_timezone()
+			);
+			if ( '' !== $schema_json ) {
+				$schema_tag = '<script type="application/ld+json" class="dcsve-schema">' . $schema_json . '</script>';
+			}
+		}
+
 		$inner = HTMLUtility::render(
 			[
 				'tag'               => 'div',
@@ -196,7 +213,7 @@ trait RenderCallbackTrait {
 					'style' => '--dcsve-accent: ' . esc_attr( $accent_color ) . ';',
 				],
 				'childrenSanitizer' => 'et_core_esc_previously',
-				'children'          => $heading . $inner_html . $script_tag . $config_tag,
+				'children'          => $heading . $inner_html . $script_tag . $config_tag . $schema_tag,
 			]
 		);
 
@@ -339,8 +356,9 @@ trait RenderCallbackTrait {
 
 				$html .= '<div class="dcsve_csv_events__list-item" data-date="' . esc_attr( $e['date'] ) . '">';
 				$html .= '<div class="dcsve_csv_events__list-date dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' );
-				if ( ! empty( $e['time'] ) ) {
-					$html .= '<strong>' . esc_html( $e['time'] . ' Uhr' ) . '</strong>';
+				$time_display = self::format_time( $e );
+				if ( '' !== $time_display ) {
+					$html .= '<strong>' . esc_html( $time_display ) . '</strong>';
 				}
 				$html .= '</div>';
 				$html .= '<div class="dcsve_csv_events__list-body">';
@@ -378,8 +396,9 @@ trait RenderCallbackTrait {
 				$html .= '<div class="dcsve_csv_events__card-body">';
 				$html .= '<div class="dcsve_csv_events__card-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
 				$html .= '<div class="dcsve_csv_events__card-meta dcsve_csv_events__el-meta">';
-				if ( ! empty( $e['time'] ) ) {
-					$html .= esc_html( $e['time'] . ' Uhr' ) . ' &middot; ';
+				$time_display = self::format_time( $e );
+				if ( '' !== $time_display ) {
+					$html .= esc_html( $time_display ) . ' &middot; ';
 				}
 				$html .= esc_html( $e['location'] );
 				$html .= '</div>';
@@ -425,7 +444,9 @@ trait RenderCallbackTrait {
 
 			$html .= '<tr data-date="' . esc_attr( $e['date'] ) . '">';
 			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $e['time'] ) . '</td>';
+			$time_display = self::format_time( $e );
+			$time_display = preg_replace( '/\s*Uhr$/u', '', $time_display ); // column labeled "Uhrzeit" — Uhr is redundant
+			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $time_display ) . '</td>';
 			$html .= '<td class="dcsve_csv_events__table-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</td>';
 			$html .= '<td class="dcsve_csv_events__el-meta">' . esc_html( $e['location'] ) . '</td>';
 			$html .= '<td class="dcsve_csv_events__table-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</td>';
@@ -445,6 +466,29 @@ trait RenderCallbackTrait {
 			return $value;
 		}
 		return 'on' === $value || 'true' === $value || true === $value;
+	}
+
+	/**
+	 * Format event time for display.
+	 *
+	 * "17:00" + "03:00" → "17:00–03:00 Uhr" (en-dash)
+	 * "17:00" alone    → "17:00 Uhr"
+	 * ""               → ""
+	 */
+	private static function format_time( array $event ): string {
+		$start = (string) ( $event['start_time'] ?? '' );
+		$end   = (string) ( $event['end_time']   ?? '' );
+		if ( '' !== $start && '' !== $end ) {
+			return $start . "\u{2013}" . $end . ' Uhr';
+		}
+		if ( '' !== $start ) {
+			return $start . ' Uhr';
+		}
+		$time = (string) ( $event['time'] ?? '' );
+		if ( '' !== $time ) {
+			return $time . ' Uhr';
+		}
+		return '';
 	}
 
 	/**
@@ -470,8 +514,9 @@ trait RenderCallbackTrait {
 			$html .= '<div class="dcsve_csv_events__slider-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
 			$html .= '</div>';
 			$html .= '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">';
-			if ( ! empty( $e['time'] ) ) {
-				$html .= esc_html( $e['time'] . ' Uhr' ) . ' &middot; ';
+			$time_display = self::format_time( $e );
+			if ( '' !== $time_display ) {
+				$html .= esc_html( $time_display ) . ' &middot; ';
 			}
 			$html .= esc_html( $e['location'] );
 			$html .= '</div>';
