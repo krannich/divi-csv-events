@@ -33,10 +33,22 @@
     }
   },
   "csvSourceMode": {
-    "innerContent": { "desktop": { "value": { "mode": "file" } } }
+    "innerContent": {
+      "desktop": {
+        "value": {
+          "mode": "file"
+        }
+      }
+    }
   },
   "csvContent": {
-    "innerContent": { "desktop": { "value": { "content": "" } } }
+    "innerContent": {
+      "desktop": {
+        "value": {
+          "content": ""
+        }
+      }
+    }
   },
   "eventSettings": {
     "innerContent": {
@@ -52,7 +64,17 @@
           "accentColor": "#2e7d32",
           "organizerName": "",
           "organizerUrl": "",
-          "schemaEnabled": "on"
+          "schemaEnabled": "on",
+          "showTime": "on",
+          "showLocation": "on",
+          "showDescription": "on",
+          "showLink": "on",
+          "showMonthHeadings": "on",
+          "showTableHeader": "on",
+          "showWeekday": "on",
+          "dateLayout": "inline",
+          "linkLabel": "",
+          "tableMobile": "scroll"
         }
       }
     }

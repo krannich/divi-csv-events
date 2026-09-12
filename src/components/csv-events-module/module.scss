@@ -22,6 +22,156 @@
         border-radius: 8px;
     }
 
+    // Stacked date layout (list + table): weekday / day / month per block,
+    // ranges as two blocks with a vertically centered dash. The flex container is
+    // an inner wrapper, never the <td>, so table cells keep their borders.
+    &--date-stacked &__list-date,
+    &--date-stacked &__table td.dcsve_csv_events__el-date {
+        white-space: normal;
+
+        .dcsve_csv_events__d-stack {
+            display: inline-flex;
+            align-items: center;
+            gap: 0 10px;
+            vertical-align: middle;
+        }
+
+        .dcsve_csv_events__d-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .dcsve_csv_events__d-day {
+            font-size: 1.6em;
+            font-weight: 700;
+            opacity: 1;
+        }
+
+        .dcsve_csv_events__d-wday,
+        .dcsve_csv_events__d-mon {
+            opacity: 0.65;
+        }
+
+        .dcsve_csv_events__d-sep {
+            font-size: 1.2em;
+            line-height: 1;
+        }
+
+        strong {
+            display: block;
+            margin-top: 4px;
+        }
+    }
+
+    // Table Layout "Stacked columns": each row becomes a block with the cells
+    // underneath each other. Responsive: one modifier per Divi breakpoint band.
+    @mixin dcsve-table-stacked {
+        display: block;
+
+        thead {
+            display: none;
+        }
+
+        tbody,
+        tr,
+        td {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        tr {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        td {
+            padding: 2px 0;
+            border: 0;
+            white-space: normal;
+        }
+
+        td.dcsve_csv_events__table-nowrap {
+            white-space: normal;
+        }
+
+        .dcsve_csv_events__table-month td {
+            padding: 12px 0 6px;
+        }
+
+        .dcsve_csv_events__table-desc .dcsve_csv_events__link {
+            margin-top: 6px;
+        }
+    }
+
+    // Table Layout "Date left, rest stacked": date cell as left column, the
+    // remaining cells stacked next to it (CSS grid on the row, no extra markup).
+    @mixin dcsve-table-split {
+        @include dcsve-table-stacked;
+
+        // Fixed date column so rows line up; override --dcsve-date-col via Custom CSS.
+        tr:not(.dcsve_csv_events__table-month) {
+            display: grid;
+            grid-template-columns: var(--dcsve-date-col, 9em) minmax(0, 1fr);
+            column-gap: 16px;
+            align-items: start;
+
+            td:first-child {
+                grid-column: 1;
+                grid-row: 1 / span 4;
+            }
+
+            td:not(:first-child) {
+                grid-column: 2;
+            }
+        }
+    }
+
+    @media (min-width: 981px) {
+        &--table-stack-desktop &__table { @include dcsve-table-stacked; }
+        &--table-split-desktop &__table { @include dcsve-table-split; }
+    }
+
+    @media (min-width: 768px) and (max-width: 980px) {
+        &--table-stack-tablet &__table { @include dcsve-table-stacked; }
+        &--table-split-tablet &__table { @include dcsve-table-split; }
+    }
+
+    @media (max-width: 767px) {
+        &--table-stack-phone &__table { @include dcsve-table-stacked; }
+        &--table-split-phone &__table { @include dcsve-table-split; }
+    }
+
+    // Defaults only; the "Link Button" Divi groups (font, background, border,
+    // spacing, box shadow) override these, including their own hover state.
+    &__link {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        line-height: 1.4;
+        color: var(--dcsve-accent, #2e7d32);
+        background: transparent;
+        border: 1px solid var(--dcsve-accent, #2e7d32);
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+
+        &:hover,
+        &:focus {
+            opacity: 0.8;
+        }
+    }
+
+    &__table-desc &__link {
+        display: block;
+        width: max-content;
+    }
+
     // Warning (invalid CSV header)
     &__warning {
         padding: 1rem 1.25rem;
@@ -110,15 +260,24 @@
         border-bottom: 1px solid #f0f0f0;
     }
 
+    // Date Text (Divi) colors this container; every part inherits so the setting
+    // reaches day number, time and badge. Hierarchy comes from opacity, not color.
     &__list-date {
         min-width: 90px;
         font-size: 13px;
-        color: #888;
+        color: #333;
         padding-top: 2px;
+
+        .dcsve_csv_events__d-wday,
+        .dcsve_csv_events__d-day,
+        .dcsve_csv_events__d-mon {
+            color: inherit;
+            opacity: 0.65;
+        }
 
         strong {
             display: block;
-            color: #333;
+            color: inherit;
             font-weight: 600;
         }
     }
@@ -172,17 +331,19 @@
         justify-content: center;
         line-height: 1;
         flex-shrink: 0;
+        color: var(--dcsve-accent, #2e7d32);
     }
 
     &__card-day {
         font-size: 16px;
         font-weight: 700;
-        color: var(--dcsve-accent, #2e7d32);
+        color: inherit;
     }
 
     &__card-mon {
         font-size: 10px;
-        color: var(--dcsve-accent, #388e3c);
+        color: inherit;
+        opacity: 0.85;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -306,17 +467,19 @@
         padding: 6px 10px;
         text-align: center;
         line-height: 1;
+        color: var(--dcsve-accent, #2e7d32);
     }
 
     &__slider-badge-day {
         font-size: 18px;
         font-weight: 700;
-        color: var(--dcsve-accent, #2e7d32);
+        color: inherit;
     }
 
     &__slider-badge-mon {
         font-size: 10px;
-        color: var(--dcsve-accent, #388e3c);
+        color: inherit;
+        opacity: 0.85;
         text-transform: uppercase;
     }
 

@@ -57,6 +57,7 @@ class SchemaBuilder {
             (string) ( $event['date']       ?? '' ),
             (string) ( $event['start_time'] ?? '' ),
             (string) ( $event['end_time']   ?? '' ),
+            (string) ( $event['end_date']   ?? '' ),
             $tz
         );
         $out['startDate'] = $dates['start'];
@@ -82,24 +83,38 @@ class SchemaBuilder {
             $out['organizer'] = $org;
         }
 
+        $link = (string) ( $event['link'] ?? '' );
+        if ( '' !== $link ) {
+            $out['url'] = $link;
+        }
+
         return $out;
     }
 
     /**
      * @return array{start:string, end:string|null}
      */
-    private static function compute_dates( string $date, string $start_time, string $end_time, \DateTimeZone $tz ): array {
+    private static function compute_dates( string $date, string $start_time, string $end_time, string $end_date, \DateTimeZone $tz ): array {
         // If date is not a valid calendar date, fall back to the raw string as startDate.
         if ( ! self::is_valid_date( $date ) ) {
             return [ 'start' => $date, 'end' => null ];
         }
 
-        // No valid HH:MM start_time → date-only start, no end.
+        $has_end_date = self::is_valid_date( $end_date ) && $end_date > $date;
+
+        // No valid HH:MM start_time → date-only start, end only for multi-day events.
         if ( ! preg_match( '/^\d{2}:\d{2}$/', $start_time ) ) {
-            return [ 'start' => $date, 'end' => null ];
+            return [ 'start' => $date, 'end' => $has_end_date ? $end_date : null ];
         }
 
         $start = self::datetime_iso( $date, $start_time, $tz );
+
+        if ( $has_end_date ) {
+            $end = preg_match( '/^\d{2}:\d{2}$/', $end_time )
+                ? self::datetime_iso( $end_date, $end_time, $tz )
+                : $end_date;
+            return [ 'start' => $start, 'end' => $end ];
+        }
 
         if ( preg_match( '/^\d{2}:\d{2}$/', $end_time ) ) {
             $end_date = $date;

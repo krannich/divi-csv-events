@@ -49,6 +49,11 @@ export const ModuleStyles = ({
         attrName: 'dateText',
       })}
 
+      {/* Weekday / Day / Month Text */}
+      {elements.style({ attrName: 'weekdayText' })}
+      {elements.style({ attrName: 'dayText' })}
+      {elements.style({ attrName: 'monthText' })}
+
       {/* Title Text */}
       {elements.style({
         attrName: 'titleText',
@@ -68,6 +73,9 @@ export const ModuleStyles = ({
       {elements.style({
         attrName: 'filterBtn',
       })}
+
+      {/* Link Button */}
+      {elements.style({ attrName: 'linkBtn' })}
 
       <CssStyle
         selector={orderClass}

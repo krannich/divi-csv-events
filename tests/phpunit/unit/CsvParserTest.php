@@ -183,4 +183,73 @@ final class CsvParserTest extends TestCase {
         $this->assertSame( 'abc', $events[0]['start_time'] );
         $this->assertSame( '',    $events[0]['end_time'] );
     }
+
+    public function test_parses_8_column_csv_with_end_date_and_link(): void {
+        $csv = "Date;Time;Title;Location;Description;Address;End Date;Link\n"
+             . "2026-06-13;17:00;Festival;Hall;Desc;Str. 1, 29640 Town;2026-06-15;https://example.com/fest\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertCount( 1, $events );
+        $this->assertSame( '2026-06-15', $events[0]['end_date'] );
+        $this->assertSame( 'https://example.com/fest', $events[0]['link'] );
+    }
+
+    public function test_parses_8_column_csv_with_german_headers(): void {
+        $csv = "Datum;Uhrzeit;Titel;Ort;Beschreibung;Adresse;Enddatum;Link\n"
+             . "2026-06-13;17:00;Fest;Halle;;;2026-06-14;http://verein.de\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '2026-06-14', $events[0]['end_date'] );
+        $this->assertSame( 'http://verein.de', $events[0]['link'] );
+    }
+
+    public function test_6_column_csv_has_empty_end_date_and_link(): void {
+        $csv = "Date;Time;Title;Location;Description;Address\n"
+             . "2026-06-13;08:00;X;Y;Z;A\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['end_date'] );
+        $this->assertSame( '', $events[0]['link'] );
+    }
+
+    public function test_end_date_before_start_is_ignored(): void {
+        $csv = "Date;Time;Title;Location;Description;Address;End Date;Link\n"
+             . "2026-06-13;;X;Y;;;2026-06-10;\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['end_date'] );
+    }
+
+    public function test_end_date_equal_to_start_is_ignored(): void {
+        $csv = "Date;Time;Title;Location;Description;Address;End Date;Link\n"
+             . "2026-06-13;;X;Y;;;2026-06-13;\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['end_date'] );
+    }
+
+    public function test_malformed_end_date_is_ignored(): void {
+        $csv = "Date;Time;Title;Location;Description;Address;End Date;Link\n"
+             . "2026-06-13;;X;Y;;;15.06.2026;\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['end_date'] );
+    }
+
+    public function test_link_without_http_scheme_is_dropped(): void {
+        $csv = "Date;Time;Title;Location;Description;Address;End Date;Link\n"
+             . "2026-06-13;;X;Y;;;;javascript:alert(1)\n"
+             . "2026-06-14;;X;Y;;;;www.example.com\n";
+
+        $events = CsvParser::parseCsvText( $csv );
+
+        $this->assertSame( '', $events[0]['link'] );
+        $this->assertSame( '', $events[1]['link'] );
+    }
 }

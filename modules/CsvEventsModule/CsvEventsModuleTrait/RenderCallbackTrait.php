@@ -55,6 +55,23 @@ trait RenderCallbackTrait {
 		$accent_color_raw = $settings['accentColor'] ?? '#2e7d32';
 		$accent_color     = preg_match( '/^#([0-9a-fA-F]{3}){1,2}$/', $accent_color_raw ) ? $accent_color_raw : '#2e7d32';
 
+		$display = [
+			'time'          => self::is_on( $settings['showTime'] ?? 'on' ),
+			'location'      => self::is_on( $settings['showLocation'] ?? 'on' ),
+			'description'   => self::is_on( $settings['showDescription'] ?? 'on' ),
+			'link'          => self::is_on( $settings['showLink'] ?? 'on' ),
+			'monthHeadings' => self::is_on( $settings['showMonthHeadings'] ?? 'on' ),
+			'tableHeader'   => self::is_on( $settings['showTableHeader'] ?? 'on' ),
+			'weekday'       => self::is_on( $settings['showWeekday'] ?? 'on' ),
+			'stacked'       => 'stacked' === ( $settings['dateLayout'] ?? 'inline' ),
+		];
+		$table_stack_classes = self::table_layout_classes( $attrs['eventSettings']['innerContent'] ?? [] );
+		$link_label = trim( (string) ( $settings['linkLabel'] ?? '' ) );
+		if ( '' === $link_label ) {
+			$link_label = __( 'Weitere Informationen', 'divi-csv-events' );
+		}
+		$display['linkLabel'] = $link_label;
+
 		$organizer_name = (string) ( $settings['organizerName'] ?? '' );
 		$organizer_url  = (string) ( $settings['organizerUrl']  ?? '' );
 		$schema_enabled = self::is_on( $settings['schemaEnabled'] ?? 'on' );
@@ -159,7 +176,7 @@ trait RenderCallbackTrait {
 			}
 			$content_html = '<div class="dcsve_csv_events__empty">' . esc_html( $empty_msg ) . '</div>';
 		} else {
-			$content_html = self::render_events_html( $events, $view, $accent_color, $show_view_switch );
+			$content_html = self::render_events_html( $events, $view, $show_view_switch, $display );
 		}
 
 		$content_container = HTMLUtility::render(
@@ -175,8 +192,16 @@ trait RenderCallbackTrait {
 
 		$inner_html .= $content_container;
 
-		// Events data as JSON for client-side filtering.
-		$events_json = wp_json_encode( $events, JSON_HEX_TAG );
+		// Paste mode has no public REST route (POST needs edit_posts), so the frontend
+		// filters client-side and needs the complete, unfiltered list.
+		$client_events = $events;
+		if ( 'paste' === $source_mode && ! $csv_error && ! empty( $csv_content ) ) {
+			$all = CsvParser::parseString( $csv_content, 'all', 0, true, 1 );
+			if ( is_array( $all ) && ! isset( $all['error'] ) ) {
+				$client_events = $all;
+			}
+		}
+		$events_json = wp_json_encode( $client_events, JSON_HEX_TAG );
 		$config_json = wp_json_encode( [
 			'sourceMode'       => $source_mode,
 			'csvUrl'           => $csv_url,
@@ -188,6 +213,7 @@ trait RenderCallbackTrait {
 			'showFilter'       => $show_filter,
 			'showViewSwitcher' => $show_view_switch,
 			'accentColor'      => $accent_color,
+			'display'          => $display,
 		], JSON_HEX_TAG );
 
 		$script_tag = '<script type="application/json" class="dcsve-data">' . $events_json . '</script>';
@@ -209,7 +235,9 @@ trait RenderCallbackTrait {
 			[
 				'tag'               => 'div',
 				'attributes'        => [
-					'class' => 'dcsve_csv_events__inner',
+					'class' => 'dcsve_csv_events__inner'
+						. ( $display['stacked'] ? ' dcsve_csv_events--date-stacked' : '' )
+						. $table_stack_classes,
 					'style' => '--dcsve-accent: ' . esc_attr( $accent_color ) . ';',
 				],
 				'childrenSanitizer' => 'et_core_esc_previously',
@@ -250,19 +278,18 @@ trait RenderCallbackTrait {
 		);
 	}
 
+
 	/**
 	 * Render events HTML for all four views (pre-rendered, JS toggles visibility).
 	 *
-	 * @since 1.0.0
-	 *
 	 * @param array  $events           Events array.
 	 * @param string $view             Fixed view or empty for all.
-	 * @param string $accent_color     Accent color hex.
 	 * @param bool   $show_view_switch Whether the view switcher is enabled.
+	 * @param array  $display          Flags: time, location, description, link, monthHeadings, tableHeader.
 	 *
 	 * @return string HTML.
 	 */
-	private static function render_events_html( $events, $view, $accent_color, $show_view_switch ) {
+	private static function render_events_html( $events, $view, $show_view_switch, array $display ) {
 		$months_de = [
 			1  => __( 'Januar', 'divi-csv-events' ),
 			2  => __( 'Februar', 'divi-csv-events' ),
@@ -314,6 +341,13 @@ trait RenderCallbackTrait {
 			$grouped[ $key ][] = $e;
 		}
 
+		$ctx = [
+			'months_de'    => $months_de,
+			'months_short' => $months_short,
+			'wdays'        => $wdays,
+			'display'      => $display,
+		];
+
 		// If view switcher is enabled, render all views (JS toggles visibility).
 		// If a fixed view is set WITHOUT switcher, render only that view.
 		$views_to_render = $show_view_switch ? [ 'list', 'cards', 'table', 'slider' ] : ( $view ? [ $view ] : [ 'list', 'cards', 'table', 'slider' ] );
@@ -321,17 +355,17 @@ trait RenderCallbackTrait {
 		$html            = '';
 
 		foreach ( $views_to_render as $v ) {
-			$display = ( $v === $default_view ) ? '' : ' style="display:none"';
-			$html .= '<div class="dcsve_csv_events__view" data-view="' . esc_attr( $v ) . '"' . $display . '>';
+			$display_attr = ( $v === $default_view ) ? '' : ' style="display:none"';
+			$html .= '<div class="dcsve_csv_events__view" data-view="' . esc_attr( $v ) . '"' . $display_attr . '>';
 
 			if ( 'list' === $v ) {
-				$html .= self::render_list_view( $grouped, $wdays, $months_short );
+				$html .= self::render_list_view( $grouped, $ctx );
 			} elseif ( 'cards' === $v ) {
-				$html .= self::render_cards_view( $grouped, $months_short );
+				$html .= self::render_cards_view( $grouped, $ctx );
 			} elseif ( 'table' === $v ) {
-				$html .= self::render_table_view( $events, $months_de, $wdays, $months_short );
+				$html .= self::render_table_view( $events, $ctx );
 			} elseif ( 'slider' === $v ) {
-				$html .= self::render_slider_view( $events, $months_short );
+				$html .= self::render_slider_view( $events, $ctx );
 			}
 
 			$html .= '</div>';
@@ -340,32 +374,36 @@ trait RenderCallbackTrait {
 		return $html;
 	}
 
+
 	/**
 	 * Render list view.
 	 */
-	private static function render_list_view( $grouped, $wdays, $months_short ) {
+	private static function render_list_view( $grouped, array $ctx ) {
+		$d    = $ctx['display'];
 		$html = '';
 		foreach ( $grouped as $month_label => $events ) {
 			$html .= '<div class="dcsve_csv_events__group">';
-			$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+			if ( $d['monthHeadings'] ) {
+				$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+			}
 			foreach ( $events as $e ) {
-				$ts   = strtotime( $e['date'] );
-				$wday = $wdays[ (int) gmdate( 'w', $ts ) ];
-				$day  = gmdate( 'j', $ts );
-				$mon  = $months_short[ (int) gmdate( 'n', $ts ) ];
-
 				$html .= '<div class="dcsve_csv_events__list-item" data-date="' . esc_attr( $e['date'] ) . '">';
-				$html .= '<div class="dcsve_csv_events__list-date dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' );
-				$time_display = self::format_time( $e );
+				$html .= '<div class="dcsve_csv_events__list-date dcsve_csv_events__el-date">' . self::render_date( $e, $ctx );
+				$time_display = $d['time'] ? self::format_time( $e ) : '';
 				if ( '' !== $time_display ) {
 					$html .= '<strong>' . esc_html( $time_display ) . '</strong>';
 				}
 				$html .= '</div>';
 				$html .= '<div class="dcsve_csv_events__list-body">';
 				$html .= '<div class="dcsve_csv_events__list-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
-				$html .= '<div class="dcsve_csv_events__list-meta dcsve_csv_events__el-meta">' . esc_html( $e['location'] ) . '</div>';
-				if ( ! empty( $e['description'] ) ) {
+				if ( $d['location'] && '' !== $e['location'] ) {
+					$html .= '<div class="dcsve_csv_events__list-meta dcsve_csv_events__el-meta">' . self::render_location( $e ) . '</div>';
+				}
+				if ( $d['description'] && ! empty( $e['description'] ) ) {
 					$html .= '<div class="dcsve_csv_events__list-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
+				}
+				if ( $d['link'] ) {
+					$html .= self::render_link( $e, $d['linkLabel'] );
 				}
 				$html .= '</div></div>';
 			}
@@ -374,36 +412,38 @@ trait RenderCallbackTrait {
 		return $html;
 	}
 
+
 	/**
 	 * Render cards view.
 	 */
-	private static function render_cards_view( $grouped, $months_short ) {
+	private static function render_cards_view( $grouped, array $ctx ) {
+		$d    = $ctx['display'];
 		$html = '';
 		foreach ( $grouped as $month_label => $events ) {
 			$html .= '<div class="dcsve_csv_events__group">';
-			$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+			if ( $d['monthHeadings'] ) {
+				$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+			}
 			$html .= '<div class="dcsve_csv_events__cards-grid">';
 			foreach ( $events as $e ) {
-				$ts  = strtotime( $e['date'] );
-				$day = gmdate( 'j', $ts );
-				$mon = $months_short[ (int) gmdate( 'n', $ts ) ];
+				[ $day, $mon ] = self::badge_parts( $e, $ctx['months_short'] );
 
 				$html .= '<div class="dcsve_csv_events__card" data-date="' . esc_attr( $e['date'] ) . '">';
 				$html .= '<div class="dcsve_csv_events__card-date dcsve_csv_events__el-date">';
-				$html .= '<span class="dcsve_csv_events__card-day">' . esc_html( $day ) . '</span>';
-				$html .= '<span class="dcsve_csv_events__card-mon">' . esc_html( $mon ) . '</span>';
+				$html .= '<span class="dcsve_csv_events__card-day dcsve_csv_events__d-day">' . esc_html( $day ) . '</span>';
+				$html .= '<span class="dcsve_csv_events__card-mon dcsve_csv_events__d-mon">' . esc_html( $mon ) . '</span>';
 				$html .= '</div>';
 				$html .= '<div class="dcsve_csv_events__card-body">';
 				$html .= '<div class="dcsve_csv_events__card-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
-				$html .= '<div class="dcsve_csv_events__card-meta dcsve_csv_events__el-meta">';
-				$time_display = self::format_time( $e );
-				if ( '' !== $time_display ) {
-					$html .= esc_html( $time_display ) . ' &middot; ';
+				$meta = self::render_meta( $e, $d );
+				if ( '' !== $meta ) {
+					$html .= '<div class="dcsve_csv_events__card-meta dcsve_csv_events__el-meta">' . $meta . '</div>';
 				}
-				$html .= esc_html( $e['location'] );
-				$html .= '</div>';
-				if ( ! empty( $e['description'] ) ) {
+				if ( $d['description'] && ! empty( $e['description'] ) ) {
 					$html .= '<div class="dcsve_csv_events__card-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
+				}
+				if ( $d['link'] ) {
+					$html .= self::render_link( $e, $d['linkLabel'] );
 				}
 				$html .= '</div></div>';
 			}
@@ -412,44 +452,66 @@ trait RenderCallbackTrait {
 		return $html;
 	}
 
+
 	/**
 	 * Render table view.
 	 */
-	private static function render_table_view( $events, $months_de, $wdays, $months_short ) {
+	private static function render_table_view( $events, array $ctx ) {
+		$d            = $ctx['display'];
+		$show_details = $d['description'] || $d['link'];
+		$columns      = 2 + (int) $d['time'] + (int) $d['location'] + (int) $show_details;
+
 		$html  = '<div class="dcsve_csv_events__table-wrap">';
 		$html .= '<table class="dcsve_csv_events__table">';
-		$html .= '<thead><tr>';
-		$html .= '<th>' . esc_html__( 'Datum', 'divi-csv-events' ) . '</th>';
-		$html .= '<th>' . esc_html__( 'Uhrzeit', 'divi-csv-events' ) . '</th>';
-		$html .= '<th>' . esc_html__( 'Veranstaltung', 'divi-csv-events' ) . '</th>';
-		$html .= '<th>' . esc_html__( 'Ort', 'divi-csv-events' ) . '</th>';
-		$html .= '<th>' . esc_html__( 'Details', 'divi-csv-events' ) . '</th>';
-		$html .= '</tr></thead><tbody>';
+		if ( $d['tableHeader'] ) {
+			$html .= '<thead><tr>';
+			$html .= '<th>' . esc_html__( 'Datum', 'divi-csv-events' ) . '</th>';
+			if ( $d['time'] ) {
+				$html .= '<th>' . esc_html__( 'Uhrzeit', 'divi-csv-events' ) . '</th>';
+			}
+			$html .= '<th>' . esc_html__( 'Veranstaltung', 'divi-csv-events' ) . '</th>';
+			if ( $d['location'] ) {
+				$html .= '<th>' . esc_html__( 'Ort', 'divi-csv-events' ) . '</th>';
+			}
+			if ( $show_details ) {
+				$html .= '<th>' . esc_html__( 'Details', 'divi-csv-events' ) . '</th>';
+			}
+			$html .= '</tr></thead>';
+		}
+		$html .= '<tbody>';
 
 		$last_month = '';
 		foreach ( $events as $e ) {
 			$ts    = strtotime( $e['date'] );
 			$month = (int) gmdate( 'n', $ts );
 			$year  = gmdate( 'Y', $ts );
-			$m     = $months_de[ $month ] . ' ' . $year;
+			$m     = $ctx['months_de'][ $month ] . ' ' . $year;
 
-			if ( $m !== $last_month ) {
-				$html .= '<tr class="dcsve_csv_events__table-month"><td colspan="5">' . esc_html( $m ) . '</td></tr>';
+			if ( $d['monthHeadings'] && $m !== $last_month ) {
+				$html .= '<tr class="dcsve_csv_events__table-month"><td colspan="' . $columns . '">' . esc_html( $m ) . '</td></tr>';
 				$last_month = $m;
 			}
 
-			$wday = $wdays[ (int) gmdate( 'w', $ts ) ];
-			$day  = gmdate( 'j', $ts );
-			$mon  = $months_short[ (int) gmdate( 'n', $ts ) ];
-
 			$html .= '<tr data-date="' . esc_attr( $e['date'] ) . '">';
-			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $wday . ', ' . $day . '. ' . $mon . '.' ) . '</td>';
-			$time_display = self::format_time( $e );
-			$time_display = preg_replace( '/\s*Uhr$/u', '', $time_display ); // column labeled "Uhrzeit" — Uhr is redundant
-			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( $time_display ) . '</td>';
+			$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . self::render_date( $e, $ctx ) . '</td>';
+			if ( $d['time'] ) {
+				// Column is already labeled "Uhrzeit", so no suffix here.
+				$html .= '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' . esc_html( self::format_time( $e, false ) ) . '</td>';
+			}
 			$html .= '<td class="dcsve_csv_events__table-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__el-meta">' . esc_html( $e['location'] ) . '</td>';
-			$html .= '<td class="dcsve_csv_events__table-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</td>';
+			if ( $d['location'] ) {
+				$html .= '<td class="dcsve_csv_events__el-meta">' . self::render_location( $e ) . '</td>';
+			}
+			if ( $show_details ) {
+				$html .= '<td class="dcsve_csv_events__table-desc dcsve_csv_events__el-desc">';
+				if ( $d['description'] ) {
+					$html .= esc_html( $e['description'] );
+				}
+				if ( $d['link'] ) {
+					$html .= self::render_link( $e, $d['linkLabel'] );
+				}
+				$html .= '</td>';
+			}
 			$html .= '</tr>';
 		}
 
@@ -469,59 +531,176 @@ trait RenderCallbackTrait {
 	}
 
 	/**
+	 * Date as weekday/day/month spans so each part can be styled separately.
+	 *
+	 * Inline:  "Mi, 16. Sep." or "Mi, 16. Sep. – Do, 17. Sep."
+	 * Stacked: a block per date with weekday / day / month lines; ranges are two blocks with a dash between.
+	 */
+	private static function render_date( array $e, array $ctx ): string {
+		$d       = $ctx['display'];
+		$wdays   = $ctx['wdays'];
+		$months  = $ctx['months_short'];
+		$span    = static fn( string $part, string $text ): string => '<span class="dcsve_csv_events__d-' . $part . '">' . esc_html( $text ) . '</span>';
+		$explode = static function ( string $date ) use ( $wdays, $months ): array {
+			$ts = strtotime( $date );
+			return [ $wdays[ (int) gmdate( 'w', $ts ) ], gmdate( 'j', $ts ), $months[ (int) gmdate( 'n', $ts ) ] ];
+		};
+
+		[ $wd1, $day1, $mon1 ] = $explode( $e['date'] );
+		$has_end = ! empty( $e['end_date'] );
+
+		if ( ! $d['stacked'] ) {
+			$one = static function ( string $wd, string $day, string $mon ) use ( $span, $d ): string {
+				return ( $d['weekday'] ? $span( 'wday', $wd . ',' ) . ' ' : '' ) . $span( 'day', $day . '.' ) . ' ' . $span( 'mon', $mon . '.' );
+			};
+			$html = $one( $wd1, $day1, $mon1 );
+			if ( $has_end ) {
+				[ $wd2, $day2, $mon2 ] = $explode( $e['end_date'] );
+				$html .= " \u{2013} " . $one( $wd2, $day2, $mon2 );
+			}
+			return $html;
+		}
+
+		// Stacked: one block per date, weekday / day / month on separate lines.
+		$block = static function ( string $wd, string $day, string $mon ) use ( $span, $d ): string {
+			return '<span class="dcsve_csv_events__d-block">' . ( $d['weekday'] ? $span( 'wday', $wd ) : '' ) . $span( 'day', $day ) . $span( 'mon', $mon ) . '</span>';
+		};
+		$html = $block( $wd1, $day1, $mon1 );
+		if ( $has_end ) {
+			[ $wd2, $day2, $mon2 ] = $explode( $e['end_date'] );
+			$html .= '<span class="dcsve_csv_events__d-sep" aria-hidden="true">' . "\u{2013}" . '</span>' . $block( $wd2, $day2, $mon2 );
+		}
+		// Wrapper keeps the flex layout off the <td> so table borders stay intact.
+		return '<span class="dcsve_csv_events__d-stack">' . $html . '</span>';
+	}
+
+	/**
+	 * Badge lines for cards/slider: ['13', 'Jun'], ['13–15', 'Jun'] or ['13. Jun –', '2. Jul'].
+	 *
+	 * @return array{0:string,1:string}
+	 */
+	private static function badge_parts( array $e, array $months_short ): array {
+		$ts  = strtotime( $e['date'] );
+		$day = gmdate( 'j', $ts );
+		$mon = $months_short[ (int) gmdate( 'n', $ts ) ];
+		if ( empty( $e['end_date'] ) ) {
+			return [ $day, $mon ];
+		}
+		$ets  = strtotime( $e['end_date'] );
+		$eday = gmdate( 'j', $ets );
+		$emon = $months_short[ (int) gmdate( 'n', $ets ) ];
+		if ( $mon === $emon && gmdate( 'Y', $ts ) === gmdate( 'Y', $ets ) ) {
+			return [ $day . "\u{2013}" . $eday, $mon ];
+		}
+		return [ $day . '. ' . $mon . " \u{2013}", $eday . '. ' . $emon ];
+	}
+
+	/**
+	 * Responsive "Table Layout": one modifier class per Divi breakpoint band in which
+	 * the table stacks. Values inherit downwards (tablet from desktop, phone from tablet).
+	 */
+	private static function table_layout_classes( array $inner_content ): string {
+		$desktop = $inner_content['desktop']['value']['tableMobile'] ?? 'scroll';
+		$tablet  = $inner_content['tablet']['value']['tableMobile'] ?? $desktop;
+		$phone   = $inner_content['phone']['value']['tableMobile'] ?? $tablet;
+
+		$classes = '';
+		foreach ( [ 'desktop' => $desktop, 'tablet' => $tablet, 'phone' => $phone ] as $band => $layout ) {
+			if ( 'stack' === $layout || 'split' === $layout ) {
+				$classes .= ' dcsve_csv_events--table-' . $layout . '-' . $band;
+			}
+		}
+		return $classes;
+	}
+
+	private static function pin_svg(): string {
+		return '<svg class="dcsve_csv_events__pin" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+	}
+
+	private static function render_location( array $e ): string {
+		if ( '' === $e['location'] ) {
+			return '';
+		}
+		return self::pin_svg() . '<span class="dcsve_csv_events__location">' . esc_html( $e['location'] ) . '</span>';
+	}
+
+	/**
+	 * "17:00 Uhr · <pin> Ort" for cards and slider, respecting the display flags.
+	 */
+	private static function render_meta( array $e, array $d ): string {
+		$parts = [];
+		$time  = $d['time'] ? self::format_time( $e ) : '';
+		if ( '' !== $time ) {
+			$parts[] = esc_html( $time );
+		}
+		if ( $d['location'] && '' !== $e['location'] ) {
+			$parts[] = self::render_location( $e );
+		}
+		return implode( ' &middot; ', $parts );
+	}
+
+	private static function render_link( array $e, string $label ): string {
+		if ( empty( $e['link'] ) ) {
+			return '';
+		}
+		return '<a class="dcsve_csv_events__link" href="' . esc_url( $e['link'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $label ) . '</a>';
+	}
+
+	/**
 	 * Format event time for display.
 	 *
 	 * "17:00" + "03:00" → "17:00–03:00 Uhr" (en-dash)
 	 * "17:00" alone    → "17:00 Uhr"
 	 * ""               → ""
 	 */
-	private static function format_time( array $event ): string {
+	private static function format_time( array $event, bool $with_suffix = true ): string {
 		$start = (string) ( $event['start_time'] ?? '' );
 		$end   = (string) ( $event['end_time']   ?? '' );
 		if ( '' !== $start && '' !== $end ) {
-			return $start . "\u{2013}" . $end . ' Uhr';
+			$time = $start . "\u{2013}" . $end;
+		} elseif ( '' !== $start ) {
+			$time = $start;
+		} else {
+			$time = (string) ( $event['time'] ?? '' );
 		}
-		if ( '' !== $start ) {
-			return $start . ' Uhr';
+		if ( '' === $time ) {
+			return '';
 		}
-		$time = (string) ( $event['time'] ?? '' );
-		if ( '' !== $time ) {
-			return $time . ' Uhr';
-		}
-		return '';
+		/* translators: %s is a time or time range, e.g. "17:00" or "17:00–20:00" */
+		return $with_suffix ? sprintf( __( '%s Uhr', 'divi-csv-events' ), $time ) : $time;
 	}
+
 
 	/**
 	 * Render slider view.
 	 */
-	private static function render_slider_view( $events, $months_short ) {
+	private static function render_slider_view( $events, array $ctx ) {
+		$d         = $ctx['display'];
 		$slider_id = 'dcsve-slider-' . wp_unique_id();
 
 		$html  = '<div class="dcsve_csv_events__slider-wrap">';
 		$html .= '<div class="dcsve_csv_events__slider-track" id="' . esc_attr( $slider_id ) . '">';
 
 		foreach ( $events as $e ) {
-			$ts  = strtotime( $e['date'] );
-			$day = gmdate( 'j', $ts );
-			$mon = $months_short[ (int) gmdate( 'n', $ts ) ];
+			[ $day, $mon ] = self::badge_parts( $e, $ctx['months_short'] );
 
 			$html .= '<div class="dcsve_csv_events__slider-card" data-date="' . esc_attr( $e['date'] ) . '">';
 			$html .= '<div class="dcsve_csv_events__slider-top">';
 			$html .= '<div class="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">';
-			$html .= '<div class="dcsve_csv_events__slider-badge-day">' . esc_html( $day ) . '</div>';
-			$html .= '<div class="dcsve_csv_events__slider-badge-mon">' . esc_html( $mon ) . '</div>';
+			$html .= '<div class="dcsve_csv_events__slider-badge-day dcsve_csv_events__d-day">' . esc_html( $day ) . '</div>';
+			$html .= '<div class="dcsve_csv_events__slider-badge-mon dcsve_csv_events__d-mon">' . esc_html( $mon ) . '</div>';
 			$html .= '</div>';
 			$html .= '<div class="dcsve_csv_events__slider-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
 			$html .= '</div>';
-			$html .= '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">';
-			$time_display = self::format_time( $e );
-			if ( '' !== $time_display ) {
-				$html .= esc_html( $time_display ) . ' &middot; ';
+			$meta = self::render_meta( $e, $d );
+			if ( '' !== $meta ) {
+				$html .= '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">' . $meta . '</div>';
 			}
-			$html .= esc_html( $e['location'] );
-			$html .= '</div>';
-			if ( ! empty( $e['description'] ) ) {
+			if ( $d['description'] && ! empty( $e['description'] ) ) {
 				$html .= '<div class="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">' . esc_html( $e['description'] ) . '</div>';
+			}
+			if ( $d['link'] ) {
+				$html .= self::render_link( $e, $d['linkLabel'] );
 			}
 			$html .= '</div>';
 		}

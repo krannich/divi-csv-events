@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     die( 'Direct access forbidden.' );
 }
 
-const MAX_CSV_CONTENT_BYTES = 102400; // 100 KB — must match src/components/csv-events-module/csv-content-editor/constants.ts
+const MAX_CSV_CONTENT_BYTES = 102400; // 100 KB — keep in sync with the csvContent field description in module.json
 
 add_action( 'rest_api_init', function () {
     // GET route: file-mode (existing behavior).

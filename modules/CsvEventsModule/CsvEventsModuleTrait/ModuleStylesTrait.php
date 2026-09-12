@@ -65,6 +65,11 @@ trait ModuleStylesTrait {
 						]
 					),
 
+					// Weekday / Day / Month Text.
+					$elements->style( [ 'attrName' => 'weekdayText' ] ),
+					$elements->style( [ 'attrName' => 'dayText' ] ),
+					$elements->style( [ 'attrName' => 'monthText' ] ),
+
 					// Title Text.
 					$elements->style(
 						[
@@ -92,6 +97,9 @@ trait ModuleStylesTrait {
 							'attrName' => 'filterBtn',
 						]
 					),
+
+					// Link Button.
+					$elements->style( [ 'attrName' => 'linkBtn' ] ),
 
 					// Custom CSS.
 					CssStyle::style(

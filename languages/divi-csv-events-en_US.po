@@ -1,0 +1,257 @@
+# English (US) translation for Divi CSV Events.
+msgid ""
+msgstr ""
+"Project-Id-Version: Divi CSV Events 1.6.0\n"
+"POT-Creation-Date: 2026-09-11 20:33+0200\n"
+"PO-Revision-Date: 2026-09-11 20:33+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: divi-csv-events\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: divi-csv-events.php:43
+msgid "Please run \"composer install\" in the plugin directory."
+msgstr ""
+
+#: divi-csv-events.php:137 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:70
+msgid "Weitere Informationen"
+msgstr "More information"
+
+#: divi-csv-events.php:139 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:648
+#, php-format
+msgid "%s Uhr"
+msgstr "%s"
+
+#: divi-csv-events.php:140 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:174
+msgid "No events found for the selected period."
+msgstr ""
+
+#: divi-csv-events.php:141 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:687
+msgid "Previous"
+msgstr ""
+
+#: divi-csv-events.php:142 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:688
+msgid "Next"
+msgstr ""
+
+#: divi-csv-events.php:143 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:465
+msgid "Datum"
+msgstr "Date"
+
+#: divi-csv-events.php:144 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:467
+msgid "Uhrzeit"
+msgstr "Time"
+
+#: divi-csv-events.php:145 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:469
+msgid "Veranstaltung"
+msgstr "Event"
+
+#: divi-csv-events.php:146 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:471
+msgid "Ort"
+msgstr "Location"
+
+#: divi-csv-events.php:147 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:474
+msgid "Details"
+msgstr "Details"
+
+#: divi-csv-events.php:149 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:291
+msgid "Januar"
+msgstr "January"
+
+#: divi-csv-events.php:149 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:292
+msgid "Februar"
+msgstr "February"
+
+#: divi-csv-events.php:149 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:293
+msgid "März"
+msgstr "March"
+
+#: divi-csv-events.php:150 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:294
+msgid "April"
+msgstr "April"
+
+#: divi-csv-events.php:150 divi-csv-events.php:156 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:295 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:309
+msgid "Mai"
+msgstr "May"
+
+#: divi-csv-events.php:150 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:296
+msgid "Juni"
+msgstr "June"
+
+#: divi-csv-events.php:151 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:297
+msgid "Juli"
+msgstr "July"
+
+#: divi-csv-events.php:151 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:298
+msgid "August"
+msgstr "August"
+
+#: divi-csv-events.php:151 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:299
+msgid "September"
+msgstr "September"
+
+#: divi-csv-events.php:152 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:300
+msgid "Oktober"
+msgstr "October"
+
+#: divi-csv-events.php:152 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:301
+msgid "November"
+msgstr "November"
+
+#: divi-csv-events.php:152 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:302
+msgid "Dezember"
+msgstr "December"
+
+#: divi-csv-events.php:155 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:305
+msgid "Jan"
+msgstr "Jan"
+
+#: divi-csv-events.php:155 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:306
+msgid "Feb"
+msgstr "Feb"
+
+#: divi-csv-events.php:155 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:307
+msgid "Mär"
+msgstr "Mar"
+
+#: divi-csv-events.php:156 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:308
+msgid "Apr"
+msgstr "Apr"
+
+#: divi-csv-events.php:156 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:310
+msgid "Jun"
+msgstr "Jun"
+
+#: divi-csv-events.php:157 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:311
+msgid "Jul"
+msgstr "Jul"
+
+#: divi-csv-events.php:157 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:312
+msgid "Aug"
+msgstr "Aug"
+
+#: divi-csv-events.php:157 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:313
+msgid "Sep"
+msgstr "Sep"
+
+#: divi-csv-events.php:158 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:314
+msgid "Okt"
+msgstr "Oct"
+
+#: divi-csv-events.php:158 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:315
+msgid "Nov"
+msgstr "Nov"
+
+#: divi-csv-events.php:158 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:316
+msgid "Dez"
+msgstr "Dec"
+
+#: divi-csv-events.php:161 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:319
+msgid "So"
+msgstr "Sun"
+
+#: divi-csv-events.php:161 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:320
+msgid "Mo"
+msgstr "Mon"
+
+#: divi-csv-events.php:161 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:321
+msgid "Di"
+msgstr "Tue"
+
+#: divi-csv-events.php:162 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:322
+msgid "Mi"
+msgstr "Wed"
+
+#: divi-csv-events.php:162 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:323
+msgid "Do"
+msgstr "Thu"
+
+#: divi-csv-events.php:162 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:324
+msgid "Fr"
+msgstr "Fri"
+
+#: divi-csv-events.php:163 modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:325
+msgid "Sa"
+msgstr "Sat"
+
+#: includes/RestApi.php:70
+#, php-format
+msgid "Invalid period. Allowed values: %s"
+msgstr ""
+
+#: includes/RestApi.php:98
+msgid "The csv_url parameter is required."
+msgstr ""
+
+#: includes/RestApi.php:107
+msgid "Only .csv files are allowed."
+msgstr ""
+
+#: includes/RestApi.php:116
+msgid "The CSV file must be uploaded to the WordPress Media Library."
+msgstr ""
+
+#: includes/RestApi.php:128
+msgid "The csv_content parameter is required."
+msgstr ""
+
+#: includes/RestApi.php:138
+#, php-format
+msgid "CSV content is too large (%1$d KB / max %2$d KB). Please use the File upload mode."
+msgstr ""
+
+#: includes/RestApi.php:149
+msgid "CSV content must be valid UTF-8."
+msgstr ""
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:113
+msgid "Woche"
+msgstr "Week"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:114
+msgid "Monat"
+msgstr "Month"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:115
+msgid "Quartal"
+msgstr "Quarter"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:116
+msgid "Jahr"
+msgstr "Year"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:117
+msgid "Alle"
+msgstr "All"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:136
+msgid "Liste"
+msgstr "List"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:137
+msgid "Kacheln"
+msgstr "Cards"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:138
+msgid "Tabelle"
+msgstr "Table"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:139
+msgid "Slider"
+msgstr "Slider"
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:166
+msgid "CSV structure is invalid."
+msgstr ""
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:171
+msgid "Please paste CSV data."
+msgstr ""
+
+#: modules/CsvEventsModule/CsvEventsModuleTrait/RenderCallbackTrait.php:172
+msgid "Please upload a CSV file."
+msgstr ""

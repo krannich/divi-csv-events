@@ -23,6 +23,8 @@ class CsvParser {
         [ 'location', 'ort' ],
         [ 'description', 'beschreibung' ],
         [ 'address', 'adresse' ],   // optional 6th column (v1.2.0+)
+        [ 'end date', 'enddate', 'end_date', 'enddatum' ], // optional 7th column (v1.3.0+)
+        [ 'link', 'url' ],          // optional 8th column (v1.3.0+)
     ];
 
     /**
@@ -107,6 +109,8 @@ class CsvParser {
             $location    = trim( $row[3] ?? '' );
             $description = trim( $row[4] ?? '' );
             $address     = trim( $row[5] ?? '' );
+            $end_date    = self::sanitize_end_date( trim( $row[6] ?? '' ), $date );
+            $link        = self::sanitize_link( trim( $row[7] ?? '' ) );
 
             if ( '' === $date || '' === $title ) {
                 continue;
@@ -119,7 +123,8 @@ class CsvParser {
 
             $events[] = compact(
                 'date', 'time', 'start_time', 'end_time',
-                'title', 'location', 'description', 'address'
+                'title', 'location', 'description', 'address',
+                'end_date', 'link'
             );
         }
 
@@ -150,6 +155,26 @@ class CsvParser {
         }
 
         return [ $time, '' ];
+    }
+
+    /**
+     * Keep an end date only when it is well-formed and strictly after the start date.
+     */
+    private static function sanitize_end_date( string $end_date, string $date ): string {
+        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $end_date ) ) {
+            return '';
+        }
+        return $end_date > $date ? $end_date : '';
+    }
+
+    /**
+     * Only absolute http(s) URLs are accepted; anything else is dropped.
+     */
+    private static function sanitize_link( string $link ): string {
+        if ( ! preg_match( '#^https?://#i', $link ) ) {
+            return '';
+        }
+        return false !== filter_var( $link, FILTER_VALIDATE_URL ) ? $link : '';
     }
 
     /**
@@ -257,8 +282,9 @@ class CsvParser {
     private static function filter_events( $events, $period, $show_past, $period_count = 1 ) {
         $today = wp_date( 'Y-m-d' );
 
+        // Multi-day events stay visible until their end date has passed.
         if ( ! $show_past ) {
-            $events = array_filter( $events, static fn( $e ) => $e['date'] >= $today );
+            $events = array_filter( $events, static fn( $e ) => self::last_day( $e ) >= $today );
             $events = array_values( $events );
         }
 
@@ -310,7 +336,11 @@ class CsvParser {
 
         return array_values( array_filter(
             $events,
-            static fn( $e ) => $e['date'] >= $effective_start && $e['date'] <= $end_date
+            static fn( $e ) => self::last_day( $e ) >= $effective_start && $e['date'] <= $end_date
         ) );
+    }
+
+    private static function last_day( array $event ): string {
+        return '' !== ( $event['end_date'] ?? '' ) ? $event['end_date'] : $event['date'];
     }
 }

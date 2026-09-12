@@ -48,6 +48,16 @@ export interface EventSettingsValue {
   organizerName?: string;
   organizerUrl?: string;
   schemaEnabled?: string;
+  showTime?: string;
+  showLocation?: string;
+  showDescription?: string;
+  showLink?: string;
+  showMonthHeadings?: string;
+  showTableHeader?: string;
+  showWeekday?: string;
+  dateLayout?: string;
+  linkLabel?: string;
+  tableMobile?: string;
 }
 
 export interface CsvEventsModuleAttrs extends InternalAttrs {
@@ -101,10 +111,16 @@ export interface CsvEventsModuleAttrs extends InternalAttrs {
 
   // Font decoration elements
   dateText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  weekdayText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  dayText?:   { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  monthText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   titleText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   metaText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   descText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   filterBtn?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
+  linkBtn?: {
+    decoration?: Element.Decoration.PickedAttributes<'font' | 'background' | 'border' | 'spacing' | 'boxShadow'>;
+  };
 
   eventSettings?: {
     innerContent?: FormatBreakpointStateAttr<EventSettingsValue>;
@@ -122,4 +138,6 @@ export interface CsvEvent {
   location: string;
   description: string;
   address?: string;
+  end_date?: string;
+  link?: string;
 }

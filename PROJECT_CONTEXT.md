@@ -160,6 +160,33 @@ Events werden als JSON-LD (`<script type="application/ld+json">`) am Ende des Mo
 - **XSS-Schutz:** `JSON_HEX_TAG` in der Encodierung verhindert `</script>`-Breakout bei böswilligen Event-Strings.
 - **Implementierung:** `includes/SchemaBuilder.php` (pure Klasse, 18 Unit-Tests).
 
+## Enddatum und Link (v1.3.0+)
+
+Zwei weitere optionale CSV-Spalten, positional nach der Adresse:
+
+- **Spalte 7 `Enddatum` / `End Date`:** mehrtägige Termine. Ein Termin verschwindet erst, wenn das Enddatum vorbei ist (`CsvParser::last_day()` in beiden Filtern, gespiegelt in `frontend.js`). Anzeige als Zeitraum in Liste/Tabelle, als Bereichs-Badge in Kacheln/Slider. Schema.org `endDate` = Enddatum (+ `end_time` bei Range). Ungültige oder nicht nach dem Start liegende Werte werden beim Parsen verworfen.
+- **Spalte 8 `Link` / `URL`:** externe URL, nur absolute `http(s)://`-Adressen. Ausgabe als Button „Weitere Informationen“ (`.dcsve_csv_events__link`, Akzentfarbe, `target="_blank"`) in allen vier Views, Schema.org `url`.
+
+Außerdem seit 1.3.0: `languages/` mit `.pot` und `en_US`-Übersetzung, `load_plugin_textdomain()`, und das Frontend-JS bekommt alle sichtbaren Strings aus PHP über `dcsveI18n`, statt sie hart deutsch zu halten.
+
+## Anzeige-Optionen (v1.4.0+)
+
+Content-Tab-Gruppe „Display“ mit sechs Toggles (alle Default an): Zeit, Ort, Beschreibung, Link-Button, Monatsüberschriften, Tabellenkopf. Sie wirken in allen vier Views, wo das Element vorkommt; in der Tabelle verschwindet die jeweilige Spalte. „Details“ gibt es nur, wenn Beschreibung oder Link aktiv ist. Ausgeblendet wird konsequent, auch wenn die CSV Daten hätte. Datum und Titel bleiben immer sichtbar. Vor dem Ort steht eine Stecknadel als Inline-SVG (`currentColor`, kein Emoji).
+
+## Datum-Darstellung (v1.5.0+)
+
+- **Wochentag-Toggle** (`showWeekday`) in der Display-Gruppe, wirkt in Liste und Tabelle.
+- **Getrennte Typografie:** Das Datum besteht aus drei Spans (Wochentag, Tag, Monat) mit eigenen Divi-Font-Gruppen „Weekday Text“, „Day Text“, „Month Text“. „Date Text“ bleibt die Basis für den ganzen Datumsblock. Kacheln und Slider tragen dieselben Klassen am Badge.
+- **Datum-Layout** (`dateLayout`: `inline` | `stacked`), nur Liste und Tabelle. Gestapelt zeigt pro Datum einen Block „Mo / 16 / Sep“, der Tag standardmäßig größer und fett. Bei Enddatum stehen zwei Blöcke nebeneinander mit vertikal zentriertem Strich (v1.5.1). Die Badges in Kacheln und Slider bleiben unverändert.
+
+## Link-Button (v1.6.0+)
+
+Eigenes Divi-Element `linkBtn` mit den Design-Gruppen Text, Background, Border (inkl. Radius), Spacing und Box Shadow, jeweils mit Hover und Responsive. Standard bleibt der Outline-Button in Akzentfarbe. Die Beschriftung ist zentral pro Modul überschreibbar („Link Button Text“ in der Display-Gruppe); leer nutzt den übersetzten Standard. Bewusst keine CSV-Spalte für den Text: zentral ist pflegeleichter und übersetzbar.
+
+## Tabelle auf Mobilgeräten (v1.6.1+)
+
+Feld „Table Layout“ in der Display-Gruppe: „Table“ (Default, scrollt bei Bedarf horizontal), „Date left, rest stacked“ (Datum als linke Spalte, übrige Zellen daneben untereinander, seit 1.6.3, gedacht für Tablet) oder „Stacked columns“. Seit 1.6.2 responsiv: pro Divi-Viewport einstellbar, mit Vererbung nach unten, also z. B. Tabelle am Desktop und ab Tablet gestapelt. Gestapelt stehen alle Zellen einer Zeile untereinander, die Kopfzeile verschwindet, Monatszeilen bleiben als Trenner. Reines CSS über Modifier-Klassen je Breakpoint-Band, kein Markup-Unterschied.
+
 ## Roadmap
 
 ### Phase 1 — MVP (Marketplace Launch)

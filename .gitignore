@@ -22,3 +22,6 @@ vendor
 
 # scaffold (not needed after setup)
 _scaffold
+
+# local Claude Code settings
+.claude/

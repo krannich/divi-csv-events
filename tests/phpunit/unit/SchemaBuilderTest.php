@@ -285,4 +285,57 @@ final class SchemaBuilderTest extends TestCase {
         $this->assertSame( 'A', $graph[0]['name'] );
         $this->assertSame( 'B', $graph[1]['name'] );
     }
+
+    public function test_end_date_with_time_range_uses_end_date_for_end(): void {
+        $json = SchemaBuilder::build_json_ld(
+            [ $this->minimalEvent( [ 'time' => '17:00-03:00', 'start_time' => '17:00', 'end_time' => '03:00', 'end_date' => '2026-06-15' ] ) ],
+            [],
+            $this->berlin
+        );
+
+        $event = $this->decode( $json )['@graph'][0];
+        $this->assertSame( '2026-06-13T17:00:00+02:00', $event['startDate'] );
+        $this->assertSame( '2026-06-15T03:00:00+02:00', $event['endDate'] );
+    }
+
+    public function test_end_date_with_single_start_time_ends_on_end_date_without_time(): void {
+        $json = SchemaBuilder::build_json_ld(
+            [ $this->minimalEvent( [ 'end_date' => '2026-06-15' ] ) ],
+            [],
+            $this->berlin
+        );
+
+        $event = $this->decode( $json )['@graph'][0];
+        $this->assertSame( '2026-06-13T17:00:00+02:00', $event['startDate'] );
+        $this->assertSame( '2026-06-15', $event['endDate'] );
+    }
+
+    public function test_end_date_without_time_is_date_only_range(): void {
+        $json = SchemaBuilder::build_json_ld(
+            [ $this->minimalEvent( [ 'time' => '', 'start_time' => '', 'end_time' => '', 'end_date' => '2026-06-15' ] ) ],
+            [],
+            $this->berlin
+        );
+
+        $event = $this->decode( $json )['@graph'][0];
+        $this->assertSame( '2026-06-13', $event['startDate'] );
+        $this->assertSame( '2026-06-15', $event['endDate'] );
+    }
+
+    public function test_link_is_emitted_as_url(): void {
+        $json = SchemaBuilder::build_json_ld(
+            [ $this->minimalEvent( [ 'link' => 'https://example.com/fest' ] ) ],
+            [],
+            $this->berlin
+        );
+
+        $event = $this->decode( $json )['@graph'][0];
+        $this->assertSame( 'https://example.com/fest', $event['url'] );
+    }
+
+    public function test_empty_link_omits_url(): void {
+        $json = SchemaBuilder::build_json_ld( [ $this->minimalEvent() ], [], $this->berlin );
+
+        $this->assertArrayNotHasKey( 'url', $this->decode( $json )['@graph'][0] );
+    }
 }
