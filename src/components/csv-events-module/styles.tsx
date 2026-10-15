@@ -44,6 +44,9 @@ export const ModuleStyles = ({
         attrName: 'heading',
       })}
 
+      {/* Month Heading Text */}
+      {elements.style({ attrName: 'monthHeadingText' })}
+
       {/* Date Text */}
       {elements.style({
         attrName: 'dateText',

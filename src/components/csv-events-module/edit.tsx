@@ -150,7 +150,7 @@ const ListView = ({ events, d }: { events: CsvEvent[]; d: DisplayFlags }): React
     <div className="dcsve_csv_events__view" data-view="list">
       {Object.entries(grouped).map(([month, items]) => (
         <div className="dcsve_csv_events__group" key={month}>
-          {d.monthHeadings && <div className="dcsve_csv_events__month">{month}</div>}
+          {d.monthHeadings && <div className="dcsve_csv_events__month dcsve_csv_events__el-month">{month}</div>}
           {items.map((e, i) => {
             const t = d.time ? formatTime(e) : '';
             return (
@@ -184,7 +184,7 @@ const CardsView = ({ events, d }: { events: CsvEvent[]; d: DisplayFlags }): Reac
     <div className="dcsve_csv_events__view" data-view="cards">
       {Object.entries(grouped).map(([month, items]) => (
         <div className="dcsve_csv_events__group" key={month}>
-          {d.monthHeadings && <div className="dcsve_csv_events__month">{month}</div>}
+          {d.monthHeadings && <div className="dcsve_csv_events__month dcsve_csv_events__el-month">{month}</div>}
           <div className="dcsve_csv_events__cards-grid">
             {items.map((e, i) => {
               const [badgeDay, badgeMon] = badgeParts(e);
@@ -226,7 +226,7 @@ const TableView = ({ events, d }: { events: CsvEvent[]; d: DisplayFlags }): Reac
         lastMonth = m;
         result.push(
           <tr className="dcsve_csv_events__table-month" key={`m-${m}`}>
-            <td colSpan={columns}>{m}</td>
+            <td className="dcsve_csv_events__el-month" colSpan={columns}>{m}</td>
           </tr>
         );
       }
@@ -334,6 +334,11 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
   const view        = settings.view || '';
   const showFilter  = isOn(settings.showFilter, true);
   const showViewSwitcher = isOn(settings.showViewSwitcher, true);
+  const showPrint   = isOn(settings.showPrint, false);
+  const printPosition = settings.printPosition || 'top';
+  const printTop    = showPrint && printPosition !== 'bottom';
+  const printBottom = showPrint && printPosition !== 'top';
+  const printButton = <span className="dcsve_csv_events__btn dcsve_csv_events__btn-print">{__('Drucken', 'divi-csv-events')}</span>;
   const accentColor = settings.accentColor || '#2e7d32';
   const display: DisplayFlags = {
     weekday:       isOn(settings.showWeekday, true),
@@ -481,7 +486,7 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
         {elements.render({ attrName: 'heading' })}
 
         {/* Controls bar */}
-        {(showFilter || showViewSwitcher) && (
+        {(showFilter || showViewSwitcher || printTop) && (
           <div className="dcsve_csv_events__controls">
             {showFilter && (
               <div className="dcsve_csv_events__periods">
@@ -519,6 +524,7 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
                 ))}
               </div>
             )}
+            {printTop && <div className="dcsve_csv_events__print">{printButton}</div>}
           </div>
         )}
 
@@ -553,6 +559,7 @@ export const CsvEventsModuleEdit = (props: CsvEventsModuleEditProps): ReactEleme
 
           {!loading && events.length > 0 && renderView()}
         </div>
+        {printBottom && <div className="dcsve_csv_events__print dcsve_csv_events__print--bottom">{printButton}</div>}
       </div>
     </ModuleContainer>
   );

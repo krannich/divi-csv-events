@@ -23,6 +23,8 @@
     const config = configEl ? JSON.parse(configEl.textContent) : {};
     wrap._dcsveConfig = config;
     wrap._dcsveCurrentView = config.fixedView || 'list';
+    wrap._dcsvePeriod = config.period || 'year';
+    wrap._dcsveEvents = initialEvents(wrap, config);
 
     // Period filter buttons.
     const periodBtns = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
@@ -32,8 +34,15 @@
         const all = wrap.querySelectorAll('.dcsve_csv_events__periods .dcsve_csv_events__btn');
         for (let b = 0; b < all.length; b++) all[b].classList.remove('dcsve_csv_events__btn--active');
         this.classList.add('dcsve_csv_events__btn--active');
+        wrap._dcsvePeriod = period;
         fetchAndRender(wrap, period);
       });
+    }
+
+    // Print button.
+    const printBtns = wrap.querySelectorAll('.dcsve_csv_events__btn-print');
+    for (let k = 0; k < printBtns.length; k++) {
+      printBtns[k].addEventListener('click', function () { printEvents(wrap); });
     }
 
     // View switcher buttons.
@@ -60,6 +69,19 @@
     });
   }
 
+  // The events currently shown: PHP embeds the filtered list in file mode and the
+  // unfiltered list in paste mode (see fetchAndRender).
+  function initialEvents(wrap, config) {
+    const dataEl = wrap.querySelector('.dcsve-data');
+    if (!dataEl) return [];
+    let data = [];
+    try { data = JSON.parse(dataEl.textContent) || []; } catch (e) { return []; }
+    if (config.sourceMode === 'paste') {
+      return filterEvents(data, config.period || 'year', config.periodCount || 1, !!config.showPast, config.count || 0);
+    }
+    return data;
+  }
+
   // ─── Fetch & Render ───
 
   function fetchAndRender(wrap, period) {
@@ -72,6 +94,7 @@
       let all = [];
       try { all = JSON.parse(dataEl.textContent) || []; } catch (e) { return; }
       const events = filterEvents(all, period, config.periodCount || 1, !!config.showPast, config.count || 0);
+      wrap._dcsveEvents = events;
       renderAllViews(wrap, events, config);
       switchView(wrap, wrap._dcsveCurrentView);
       return;
@@ -93,6 +116,7 @@
     fetch(restUrl)
       .then(function (res) { return res.json(); })
       .then(function (events) {
+        wrap._dcsveEvents = events;
         renderAllViews(wrap, events, config);
         switchView(wrap, wrap._dcsveCurrentView);
       })
@@ -219,6 +243,9 @@
 
   function renderLink(e, d) {
     if (!e.link) return '';
+    if (d.linkAsUrl) {
+      return '<a class="dcsve_csv_events__link dcsve_csv_events__link--url" href="' + esc(e.link) + '">' + esc(e.link) + '</a>';
+    }
     return '<a class="dcsve_csv_events__link" href="' + esc(e.link) + '" target="_blank" rel="noopener noreferrer">' + esc(d.linkLabel) + '</a>';
   }
 
@@ -247,7 +274,7 @@
       const month = g.order[i];
       const items = g.groups[month];
       html += '<div class="dcsve_csv_events__group">';
-      if (d.monthHeadings) html += '<div class="dcsve_csv_events__month">' + esc(month) + '</div>';
+      if (d.monthHeadings) html += '<div class="dcsve_csv_events__month dcsve_csv_events__el-month">' + esc(month) + '</div>';
       for (let j = 0; j < items.length; j++) {
         const e = items[j];
         html += '<div class="dcsve_csv_events__list-item">';
@@ -274,7 +301,7 @@
       const month = g.order[i];
       const items = g.groups[month];
       html += '<div class="dcsve_csv_events__group">';
-      if (d.monthHeadings) html += '<div class="dcsve_csv_events__month">' + esc(month) + '</div>';
+      if (d.monthHeadings) html += '<div class="dcsve_csv_events__month dcsve_csv_events__el-month">' + esc(month) + '</div>';
       html += '<div class="dcsve_csv_events__cards-grid">';
       for (let j = 0; j < items.length; j++) {
         const e = items[j], badge = badgeParts(e);
@@ -311,7 +338,7 @@
     for (let i = 0; i < events.length; i++) {
       const e = events[i], dt = parseDate(e.date);
       const m = MONTHS[dt.getMonth()] + ' ' + dt.getFullYear();
-      if (d.monthHeadings && m !== lastMonth) { html += '<tr class="dcsve_csv_events__table-month"><td colspan="' + columns + '">' + esc(m) + '</td></tr>'; lastMonth = m; }
+      if (d.monthHeadings && m !== lastMonth) { html += '<tr class="dcsve_csv_events__table-month"><td class="dcsve_csv_events__el-month" colspan="' + columns + '">' + esc(m) + '</td></tr>'; lastMonth = m; }
       html += '<tr><td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' + renderDate(e, d) + '</td>';
       if (d.time) html += '<td class="dcsve_csv_events__table-nowrap dcsve_csv_events__el-date">' + esc(formatTime(e, false)) + '</td>';
       html += '<td class="dcsve_csv_events__table-title dcsve_csv_events__el-title">' + esc(e.title) + '</td>';
@@ -382,6 +409,91 @@
     }
 
     content.innerHTML = html;
+  }
+
+  // ─── Print ───
+
+  const PRINT_CSS = [
+    '@page{size:A4;margin:15mm}',
+    'html,body{margin:0;padding:0;background:#fff;color:#000}',
+    'body{font:11px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.dcsve-print__title{font-size:18px;font-weight:700;margin:0 0 2px}',
+    '.dcsve-print__meta{font-size:10px;color:#555;margin:0 0 12px}',
+    '.dcsve_csv_events{font-size:11px;color:#000}',
+    '.dcsve_csv_events__link--url{display:block;margin:2px 0 0;padding:0;border:0;background:none;font-size:9.5px;color:#333;text-decoration:none;word-break:break-all}',
+    '.dcsve_csv_events__month{font-size:12px;margin:10px 0 4px;color:#000;break-after:avoid}',
+    '.dcsve_csv_events__table{font-size:10.5px}',
+    '.dcsve_csv_events__table th{font-size:10px;padding:4px 6px;color:#000;border-bottom:1px solid #000}',
+    '.dcsve_csv_events__table td{padding:4px 6px;border-bottom:1px solid #ccc;vertical-align:top}',
+    '.dcsve_csv_events__table-month td{font-size:11px;padding:8px 6px 3px;color:#000;border-bottom:1px solid #000}',
+    '.dcsve_csv_events__table-desc{color:#333}',
+    '.dcsve_csv_events__list-item{padding:5px 0;border-bottom:1px solid #ccc;gap:10px}',
+    '.dcsve_csv_events__list-date{min-width:80px;font-size:10.5px;color:#000}',
+    '.dcsve_csv_events__list-title{font-size:11.5px;color:#000}',
+    '.dcsve_csv_events__list-meta,.dcsve_csv_events__list-desc{font-size:10.5px;color:#333}',
+    '.dcsve_csv_events__cards-grid{grid-template-columns:repeat(2,1fr);gap:6px}',
+    '.dcsve_csv_events__card{padding:8px 10px;border:1px solid #bbb;border-radius:4px;gap:8px}',
+    '.dcsve_csv_events__card-date{background:#eee;color:#000;min-width:38px;height:38px}',
+    '.dcsve_csv_events__card-title{font-size:11px;color:#000}',
+    '.dcsve_csv_events__card-meta,.dcsve_csv_events__card-desc{font-size:10px;color:#333;white-space:normal}',
+    'tr,.dcsve_csv_events__list-item,.dcsve_csv_events__card{break-inside:avoid}',
+    '.dcsve_csv_events--date-stacked .dcsve_csv_events__d-day{font-size:1.4em}'
+  ].join('\n');
+
+  function fmtToday() {
+    const n = new Date();
+    return (n.getDate() < 10 ? '0' : '') + n.getDate() + '.' + (n.getMonth() < 9 ? '0' : '') + (n.getMonth() + 1) + '.' + n.getFullYear();
+  }
+
+  // Builds the standalone print document for the events currently shown.
+  // Past events are always dropped, link buttons are hidden, the view comes from config.printView.
+  function buildPrintDocument(config, events, period, stylesheetHref) {
+    const today = isoDate(new Date());
+    const upcoming = (events || []).filter(function (e) { return lastDay(e) >= today; });
+    const d = displayFlags(config);
+    const pd = config.printDisplay || {};
+    const on = function (k, fallback) { return pd[k] === undefined ? fallback : !!pd[k]; };
+    d.weekday = on('weekday', d.weekday);
+    d.time = on('time', d.time);
+    d.location = on('location', d.location);
+    d.description = on('description', d.description);
+    d.monthHeadings = on('monthHeadings', d.monthHeadings);
+    d.link = on('linkUrl', false);
+    d.linkAsUrl = true;
+    const view = config.printView || 'table';
+    let body;
+    if (!upcoming.length) body = NO_EVENTS;
+    else if (view === 'list') body = renderList(upcoming, d);
+    else if (view === 'cards') body = renderCards(upcoming, d);
+    else body = renderTable(upcoming, d);
+
+    const periods = I18N.periods || {};
+    const metaParts = [];
+    if (periods[period]) metaParts.push(periods[period]);
+    metaParts.push((I18N.printedOn || 'Stand: %s').replace('%s', fmtToday()));
+    const title = config.heading || document.title || '';
+    const stackedClass = d.stacked ? ' dcsve_csv_events--date-stacked' : '';
+
+    return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title>'
+      + (stylesheetHref ? '<link rel="stylesheet" href="' + esc(stylesheetHref) + '">' : '')
+      + '<style>' + PRINT_CSS + '</style></head><body>'
+      + '<div class="dcsve_csv_events dcsve_csv_events--print"><div class="dcsve_csv_events__inner' + stackedClass + '" style="--dcsve-accent:#000">'
+      + (title ? '<h1 class="dcsve-print__title">' + esc(title) + '</h1>' : '')
+      + '<p class="dcsve-print__meta">' + esc(metaParts.join(' \u00b7 ')) + '</p>'
+      + '<div class="dcsve_csv_events__content"><div class="dcsve_csv_events__view" data-view="' + esc(view) + '">' + body + '</div></div>'
+      + '</div></div>'
+      + '<script>window.addEventListener("load",function(){setTimeout(function(){window.print();},250);});<\/script>'
+      + '</body></html>';
+  }
+
+  function printEvents(wrap) {
+    const link = document.getElementById('divi-csv-events-bundle-style-css');
+    const html = buildPrintDocument(wrap._dcsveConfig || {}, wrap._dcsveEvents || [], wrap._dcsvePeriod, link ? link.href : '');
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
   }
 
   function switchView(wrap, targetView) {

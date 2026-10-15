@@ -52,6 +52,12 @@ trait RenderCallbackTrait {
 		$show_past  = self::is_on( $settings['showPast'] ?? 'off' );
 		$show_filter      = self::is_on( $settings['showFilter'] ?? 'on' );
 		$show_view_switch = self::is_on( $settings['showViewSwitcher'] ?? 'on' );
+		$show_print       = self::is_on( $settings['showPrint'] ?? 'off' );
+		$print_view       = in_array( $settings['printView'] ?? 'table', [ 'table', 'list', 'cards' ], true ) ? $settings['printView'] : 'table';
+		$print_position   = in_array( $settings['printPosition'] ?? 'top', [ 'top', 'bottom', 'both' ], true ) ? $settings['printPosition'] : 'top';
+		$print_top        = $show_print && 'bottom' !== $print_position;
+		$print_bottom     = $show_print && 'top' !== $print_position;
+		$print_button     = '<button type="button" class="dcsve_csv_events__btn dcsve_csv_events__btn-print">' . esc_html__( 'Drucken', 'divi-csv-events' ) . '</button>';
 		$accent_color_raw = $settings['accentColor'] ?? '#2e7d32';
 		$accent_color     = preg_match( '/^#([0-9a-fA-F]{3}){1,2}$/', $accent_color_raw ) ? $accent_color_raw : '#2e7d32';
 
@@ -105,7 +111,7 @@ trait RenderCallbackTrait {
 		$inner_html = '';
 
 		// Controls bar with pre-rendered buttons.
-		if ( $show_filter || $show_view_switch ) {
+		if ( $show_filter || $show_view_switch || $print_top ) {
 			$controls_html = '';
 
 			// Period filter buttons.
@@ -146,6 +152,10 @@ trait RenderCallbackTrait {
 					$views_html .= '<button class="dcsve_csv_events__btn dcsve_csv_events__btn-view' . $active . '" data-view="' . esc_attr( $vkey ) . '" title="' . esc_attr( $view_labels[ $vkey ] ) . '">' . $icon . '</button>';
 				}
 				$controls_html .= '<div class="dcsve_csv_events__views">' . $views_html . '</div>';
+			}
+
+			if ( $print_top ) {
+				$controls_html .= '<div class="dcsve_csv_events__print">' . $print_button . '</div>';
 			}
 
 			$controls_html = HTMLUtility::render(
@@ -192,6 +202,10 @@ trait RenderCallbackTrait {
 
 		$inner_html .= $content_container;
 
+		if ( $print_bottom ) {
+			$inner_html .= '<div class="dcsve_csv_events__print dcsve_csv_events__print--bottom">' . $print_button . '</div>';
+		}
+
 		// Paste mode has no public REST route (POST needs edit_posts), so the frontend
 		// filters client-side and needs the complete, unfiltered list.
 		$client_events = $events;
@@ -214,6 +228,16 @@ trait RenderCallbackTrait {
 			'showViewSwitcher' => $show_view_switch,
 			'accentColor'      => $accent_color,
 			'display'          => $display,
+			'printView'        => $print_view,
+			'printDisplay'     => [
+				'weekday'       => self::is_on( $settings['printWeekday'] ?? 'on' ),
+				'time'          => self::is_on( $settings['printTime'] ?? 'on' ),
+				'location'      => self::is_on( $settings['printLocation'] ?? 'on' ),
+				'description'   => self::is_on( $settings['printDescription'] ?? 'on' ),
+				'monthHeadings' => self::is_on( $settings['printMonthHeadings'] ?? 'on' ),
+				'linkUrl'       => self::is_on( $settings['printLinkUrl'] ?? 'off' ),
+			],
+			'heading'          => wp_strip_all_tags( (string) ( $attrs['heading']['innerContent']['desktop']['value'] ?? '' ) ),
 		], JSON_HEX_TAG );
 
 		$script_tag = '<script type="application/json" class="dcsve-data">' . $events_json . '</script>';
@@ -384,7 +408,7 @@ trait RenderCallbackTrait {
 		foreach ( $grouped as $month_label => $events ) {
 			$html .= '<div class="dcsve_csv_events__group">';
 			if ( $d['monthHeadings'] ) {
-				$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+				$html .= '<div class="dcsve_csv_events__month dcsve_csv_events__el-month">' . esc_html( $month_label ) . '</div>';
 			}
 			foreach ( $events as $e ) {
 				$html .= '<div class="dcsve_csv_events__list-item" data-date="' . esc_attr( $e['date'] ) . '">';
@@ -422,7 +446,7 @@ trait RenderCallbackTrait {
 		foreach ( $grouped as $month_label => $events ) {
 			$html .= '<div class="dcsve_csv_events__group">';
 			if ( $d['monthHeadings'] ) {
-				$html .= '<div class="dcsve_csv_events__month">' . esc_html( $month_label ) . '</div>';
+				$html .= '<div class="dcsve_csv_events__month dcsve_csv_events__el-month">' . esc_html( $month_label ) . '</div>';
 			}
 			$html .= '<div class="dcsve_csv_events__cards-grid">';
 			foreach ( $events as $e ) {
@@ -488,7 +512,7 @@ trait RenderCallbackTrait {
 			$m     = $ctx['months_de'][ $month ] . ' ' . $year;
 
 			if ( $d['monthHeadings'] && $m !== $last_month ) {
-				$html .= '<tr class="dcsve_csv_events__table-month"><td colspan="' . $columns . '">' . esc_html( $m ) . '</td></tr>';
+				$html .= '<tr class="dcsve_csv_events__table-month"><td class="dcsve_csv_events__el-month" colspan="' . $columns . '">' . esc_html( $m ) . '</td></tr>';
 				$last_month = $m;
 			}
 

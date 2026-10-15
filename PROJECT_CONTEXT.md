@@ -187,6 +187,12 @@ Eigenes Divi-Element `linkBtn` mit den Design-Gruppen Text, Background, Border (
 
 Feld „Table Layout“ in der Display-Gruppe: „Table“ (Default, scrollt bei Bedarf horizontal), „Date left, rest stacked“ (Datum als linke Spalte, übrige Zellen daneben untereinander, seit 1.6.3, gedacht für Tablet) oder „Stacked columns“. Seit 1.6.2 responsiv: pro Divi-Viewport einstellbar, mit Vererbung nach unten, also z. B. Tabelle am Desktop und ab Tablet gestapelt. Gestapelt stehen alle Zellen einer Zeile untereinander, die Kopfzeile verschwindet, Monatszeilen bleiben als Trenner. Reines CSS über Modifier-Klassen je Breakpoint-Band, kein Markup-Unterschied.
 
+## Druckansicht (v1.7.0+)
+
+Display-Gruppe: „Show Print Button“ (Default aus), „Print Button Position“ (oben bei den Filtern, unten unter den Terminen, oder beides) und „Print View“ (Tabelle, Liste, Kacheln; Default Tabelle). Der Button öffnet ein neues Fenster mit der **aktuell gefilterten Auswahl**, vergangene Termine werden immer entfernt, und startet den Browser-Druckdialog. Kein PDF-Export. Das Druckdokument lädt das Plugin-CSS und ergänzt A4-Print-CSS (11 px Grundschrift, `@page A4 15mm`, kein Umbruch innerhalb einer Zeile/Karte, Link-Buttons ausgeblendet, Farben schwarz). Überschrift des Moduls als Titel, darunter Zeitraum und „Stand: Datum“. Welche Felder gedruckt werden, steuern eigene Toggles („Print: Weekday/Time/Location/Description/Month Headings/Link URL“), unabhängig von den Bildschirm-Toggles; Links erscheinen im Druck als Klartext-URL, standardmäßig aus.
+
+Offen: Wie „nächstes Jahr“ eingebunden wird. Heute zeigt „Jahr“ das Kalenderjahr ab heute; `periodCount` 2 deckt dieses und nächstes Jahr ab, als Filter-Chip gibt es das noch nicht.
+
 ## Roadmap
 
 ### Phase 1 — MVP (Marketplace Launch)

@@ -58,6 +58,15 @@ export interface EventSettingsValue {
   dateLayout?: string;
   linkLabel?: string;
   tableMobile?: string;
+  showPrint?: string;
+  printView?: string;
+  printPosition?: string;
+  printWeekday?: string;
+  printTime?: string;
+  printLocation?: string;
+  printDescription?: string;
+  printMonthHeadings?: string;
+  printLinkUrl?: string;
 }
 
 export interface CsvEventsModuleAttrs extends InternalAttrs {
@@ -110,6 +119,7 @@ export interface CsvEventsModuleAttrs extends InternalAttrs {
   heading?: Element.Types.Title.Attributes;
 
   // Font decoration elements
+  monthHeadingText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   dateText?:  { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   weekdayText?: { decoration?: { font?: Element.Decoration.Font.Attributes; }; };
   dayText?:   { decoration?: { font?: Element.Decoration.Font.Attributes; }; };

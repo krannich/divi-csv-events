@@ -74,7 +74,16 @@
           "showWeekday": "on",
           "dateLayout": "inline",
           "linkLabel": "",
-          "tableMobile": "scroll"
+          "tableMobile": "scroll",
+          "showPrint": "off",
+          "printView": "table",
+          "printWeekday": "on",
+          "printTime": "on",
+          "printLocation": "on",
+          "printDescription": "on",
+          "printMonthHeadings": "on",
+          "printLinkUrl": "off",
+          "printPosition": "top"
         }
       }
     }

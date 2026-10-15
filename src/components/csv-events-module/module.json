@@ -237,6 +237,41 @@
       "elementType": "heading",
       "childrenSanitizer": "et_core_esc_previously"
     },
+    "monthHeadingText": {
+      "type": "object",
+      "selector": "{{selector}} .dcsve_csv_events__el-month",
+      "styleProps": {
+        "font": {
+          "important": {
+            "font": {
+              "desktop": {
+                "value": {
+                  "color": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "settings": {
+        "decoration": {
+          "font": {
+            "priority": 15,
+            "component": {
+              "props": {
+                "groupLabel": "Month Heading Text",
+                "fieldLabel": "Month Heading",
+                "fields": {
+                  "headingLevel": {
+                    "render": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "dateText": {
       "type": "object",
       "selector": "{{selector}} .dcsve_csv_events__el-date",
@@ -619,7 +654,16 @@
               "showWeekday": "on",
               "dateLayout": "inline",
               "linkLabel": "",
-              "tableMobile": "scroll"
+              "tableMobile": "scroll",
+              "showPrint": "off",
+              "printView": "table",
+              "printWeekday": "on",
+              "printTime": "on",
+              "printLocation": "on",
+              "printDescription": "on",
+              "printMonthHeadings": "on",
+              "printLinkUrl": "off",
+              "printPosition": "top"
             }
           }
         }
@@ -1075,6 +1119,194 @@
                     },
                     "stack": {
                       "label": "Stacked columns"
+                    }
+                  }
+                }
+              }
+            },
+            "showPrint": {
+              "groupSlug": "contentDisplay",
+              "priority": 80,
+              "render": true,
+              "subName": "showPrint",
+              "label": "Show Print Button",
+              "description": "Adds a print button next to the filters. Printing opens a new window with the currently filtered events (past events excluded) and starts the browser print dialog.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printView": {
+              "groupSlug": "contentDisplay",
+              "priority": 85,
+              "render": true,
+              "subName": "printView",
+              "label": "Print View",
+              "description": "Layout used in the print window, independent of the view shown on the page.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/select",
+                "type": "field",
+                "props": {
+                  "options": {
+                    "table": {
+                      "label": "Table"
+                    },
+                    "list": {
+                      "label": "List"
+                    },
+                    "cards": {
+                      "label": "Cards"
+                    }
+                  }
+                }
+              }
+            },
+            "printWeekday": {
+              "groupSlug": "contentDisplay",
+              "priority": 86,
+              "render": true,
+              "subName": "printWeekday",
+              "label": "Print: Weekday",
+              "description": "Fields included in the print window.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printTime": {
+              "groupSlug": "contentDisplay",
+              "priority": 87,
+              "render": true,
+              "subName": "printTime",
+              "label": "Print: Time",
+              "description": "",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printLocation": {
+              "groupSlug": "contentDisplay",
+              "priority": 88,
+              "render": true,
+              "subName": "printLocation",
+              "label": "Print: Location",
+              "description": "",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printDescription": {
+              "groupSlug": "contentDisplay",
+              "priority": 89,
+              "render": true,
+              "subName": "printDescription",
+              "label": "Print: Description",
+              "description": "",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printMonthHeadings": {
+              "groupSlug": "contentDisplay",
+              "priority": 90,
+              "render": true,
+              "subName": "printMonthHeadings",
+              "label": "Print: Month Headings",
+              "description": "",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printLinkUrl": {
+              "groupSlug": "contentDisplay",
+              "priority": 91,
+              "render": true,
+              "subName": "printLinkUrl",
+              "label": "Print: Link URL",
+              "description": "Prints the link as plain URL text.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printPosition": {
+              "groupSlug": "contentDisplay",
+              "priority": 82,
+              "render": true,
+              "subName": "printPosition",
+              "label": "Print Button Position",
+              "description": "Where the print button appears.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/select",
+                "type": "field",
+                "props": {
+                  "options": {
+                    "top": {
+                      "label": "Top (with the filters)"
+                    },
+                    "bottom": {
+                      "label": "Bottom (below the events)"
+                    },
+                    "both": {
+                      "label": "Top and bottom"
                     }
                   }
                 }

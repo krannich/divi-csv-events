@@ -58,6 +58,9 @@ trait ModuleStylesTrait {
 						]
 					),
 
+					// Month Heading Text.
+					$elements->style( [ 'attrName' => 'monthHeadingText' ] ),
+
 					// Date Text.
 					$elements->style(
 						[

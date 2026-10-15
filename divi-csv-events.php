@@ -3,7 +3,7 @@
 Plugin Name: Divi CSV Events
 Plugin URI:  https://github.com/krannich/divi-csv-events
 Description: Display events from a CSV file in four views (list, cards, table, slider) with period filters. Built for Divi 5.
-Version:     1.6.4
+Version:     1.7.2
 Author:      DiviSimpleEventList
 Author URI:
 License:     GPL2
@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'DCSVE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DCSVE_URL', plugin_dir_url( __FILE__ ) );
 define( 'DCSVE_JSON_PATH', DCSVE_PATH . 'modules-json/' );
-define( 'DCSVE_VERSION', '1.6.4' );
+define( 'DCSVE_VERSION', '1.7.2' );
 
 /**
  * Requires Autoloader.
@@ -145,6 +145,16 @@ function dcsve_frontend_i18n() {
 		'colTitle'    => __( 'Veranstaltung', 'divi-csv-events' ),
 		'colLocation' => __( 'Ort', 'divi-csv-events' ),
 		'colDetails'  => __( 'Details', 'divi-csv-events' ),
+		'print'       => __( 'Drucken', 'divi-csv-events' ),
+		/* translators: %s is a date */
+		'printedOn'   => __( 'Stand: %s', 'divi-csv-events' ),
+		'periods'     => [
+			'week'    => __( 'Woche', 'divi-csv-events' ),
+			'month'   => __( 'Monat', 'divi-csv-events' ),
+			'quarter' => __( 'Quartal', 'divi-csv-events' ),
+			'year'    => __( 'Jahr', 'divi-csv-events' ),
+			'all'     => __( 'Alle', 'divi-csv-events' ),
+		],
 		'months'      => [
 			__( 'Januar', 'divi-csv-events' ), __( 'Februar', 'divi-csv-events' ), __( 'März', 'divi-csv-events' ),
 			__( 'April', 'divi-csv-events' ), __( 'Mai', 'divi-csv-events' ), __( 'Juni', 'divi-csv-events' ),
