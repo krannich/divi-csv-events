@@ -663,7 +663,10 @@
               "printDescription": "on",
               "printMonthHeadings": "on",
               "printLinkUrl": "off",
-              "printPosition": "top"
+              "printPosition": "top",
+              "printLogo": "on",
+              "printSiteTitle": "on",
+              "printTableHeader": "on"
             }
           }
         }
@@ -1265,7 +1268,7 @@
             },
             "printLinkUrl": {
               "groupSlug": "contentDisplay",
-              "priority": 91,
+              "priority": 92,
               "render": true,
               "subName": "printLinkUrl",
               "label": "Print: Link URL",
@@ -1310,6 +1313,60 @@
                     }
                   }
                 }
+              }
+            },
+            "printLogo": {
+              "groupSlug": "contentDisplay",
+              "priority": 83,
+              "render": true,
+              "subName": "printLogo",
+              "label": "Print: Site Logo",
+              "description": "Prints the site logo (Customizer logo, falling back to the Divi logo) at the top.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printSiteTitle": {
+              "groupSlug": "contentDisplay",
+              "priority": 84,
+              "render": true,
+              "subName": "printSiteTitle",
+              "label": "Print: Site Title",
+              "description": "Prints the site title above the module heading.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
+              }
+            },
+            "printTableHeader": {
+              "groupSlug": "contentDisplay",
+              "priority": 91,
+              "render": true,
+              "subName": "printTableHeader",
+              "label": "Print: Table Header",
+              "description": "Column header row in the printed table.",
+              "features": {
+                "sticky": false,
+                "responsive": false,
+                "hover": false,
+                "dynamicContent": false
+              },
+              "component": {
+                "name": "divi/toggle",
+                "type": "field"
               }
             }
           }

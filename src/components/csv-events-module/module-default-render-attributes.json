@@ -83,7 +83,10 @@
           "printDescription": "on",
           "printMonthHeadings": "on",
           "printLinkUrl": "off",
-          "printPosition": "top"
+          "printPosition": "top",
+          "printLogo": "on",
+          "printSiteTitle": "on",
+          "printTableHeader": "on"
         }
       }
     }

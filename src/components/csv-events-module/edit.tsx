@@ -117,9 +117,8 @@ const EventMeta = ({ event, d }: { event: CsvEvent; d: DisplayFlags }): ReactEle
   if (!t && !hasLocation) return null;
   return (
     <>
-      {t}
-      {t && hasLocation && ' · '}
-      {hasLocation && <EventLocation event={event} />}
+      {t && <span className="dcsve_csv_events__meta-time">{t}</span>}
+      {hasLocation && <span className="dcsve_csv_events__meta-loc"><EventLocation event={event} /></span>}
     </>
   );
 };
@@ -278,18 +277,18 @@ const SliderView = ({ events, d }: { events: CsvEvent[]; d: DisplayFlags }): Rea
           const [badgeDay, badgeMon] = badgeParts(e);
           return (
             <div className="dcsve_csv_events__slider-card" key={i}>
-              <div className="dcsve_csv_events__slider-top">
-                <div className="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">
-                  <div className="dcsve_csv_events__slider-badge-day dcsve_csv_events__d-day">{badgeDay}</div>
-                  <div className="dcsve_csv_events__slider-badge-mon dcsve_csv_events__d-mon">{badgeMon}</div>
-                </div>
-                <div className="dcsve_csv_events__slider-title dcsve_csv_events__el-title">{e.title}</div>
+              <div className="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">
+                <div className="dcsve_csv_events__slider-badge-day dcsve_csv_events__d-day">{badgeDay}</div>
+                <div className="dcsve_csv_events__slider-badge-mon dcsve_csv_events__d-mon">{badgeMon}</div>
               </div>
-              {((d.time && formatTime(e)) || (d.location && e.location)) && (
-                <div className="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta"><EventMeta event={e} d={d} /></div>
-              )}
-              {d.description && e.description && <div className="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">{e.description}</div>}
-              {d.link && <EventLink event={e} d={d} />}
+              <div className="dcsve_csv_events__slider-body">
+                <div className="dcsve_csv_events__slider-title dcsve_csv_events__el-title">{e.title}</div>
+                {((d.time && formatTime(e)) || (d.location && e.location)) && (
+                  <div className="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta"><EventMeta event={e} d={d} /></div>
+                )}
+                {d.description && e.description && <div className="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">{e.description}</div>}
+                {d.link && <EventLink event={e} d={d} />}
+              </div>
             </div>
           );
         })}

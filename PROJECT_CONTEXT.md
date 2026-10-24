@@ -73,6 +73,7 @@ Der funktionierende Prototyp (`reference/vereinskalender.php`) wurde als WordPre
 - Gut für Ausdrucke
 
 ### Slider (`view="slider"`)
+- Seit 1.7.4 gleicher Kartenaufbau wie Kacheln: Badge links, rechts Titel, darunter Uhrzeit/Ort, Beschreibung, Button
 - Horizontaler Scroll-Track mit Snap
 - Karten ähnlich wie Kacheln-Ansicht, aber horizontal
 - Desktop: Vor/Zurück-Buttons erscheinen nur auf Hover
@@ -189,7 +190,7 @@ Feld „Table Layout“ in der Display-Gruppe: „Table“ (Default, scrollt bei
 
 ## Druckansicht (v1.7.0+)
 
-Display-Gruppe: „Show Print Button“ (Default aus), „Print Button Position“ (oben bei den Filtern, unten unter den Terminen, oder beides) und „Print View“ (Tabelle, Liste, Kacheln; Default Tabelle). Der Button öffnet ein neues Fenster mit der **aktuell gefilterten Auswahl**, vergangene Termine werden immer entfernt, und startet den Browser-Druckdialog. Kein PDF-Export. Das Druckdokument lädt das Plugin-CSS und ergänzt A4-Print-CSS (11 px Grundschrift, `@page A4 15mm`, kein Umbruch innerhalb einer Zeile/Karte, Link-Buttons ausgeblendet, Farben schwarz). Überschrift des Moduls als Titel, darunter Zeitraum und „Stand: Datum“. Welche Felder gedruckt werden, steuern eigene Toggles („Print: Weekday/Time/Location/Description/Month Headings/Link URL“), unabhängig von den Bildschirm-Toggles; Links erscheinen im Druck als Klartext-URL, standardmäßig aus.
+Display-Gruppe: „Show Print Button“ (Default aus), „Print Button Position“ (oben bei den Filtern, unten unter den Terminen, oder beides) und „Print View“ (Tabelle, Liste, Kacheln; Default Tabelle). Der Button öffnet ein neues Fenster mit der **aktuell gefilterten Auswahl**, vergangene Termine werden immer entfernt, und startet den Browser-Druckdialog. Kein PDF-Export. Das Druckdokument lädt das Plugin-CSS und ergänzt A4-Print-CSS (11 px Grundschrift, `@page A4 15mm`, kein Umbruch innerhalb einer Zeile/Karte, Link-Buttons ausgeblendet, Farben schwarz). Überschrift des Moduls als Titel, darunter Zeitraum und „Stand: Datum“. Welche Felder gedruckt werden, steuern eigene Toggles („Print: Site Logo/Site Title/Weekday/Time/Location/Description/Month Headings/Table Header/Link URL“), unabhängig von den Bildschirm-Toggles; Links erscheinen im Druck als Klartext-URL, standardmäßig aus.
 
 Offen: Wie „nächstes Jahr“ eingebunden wird. Heute zeigt „Jahr“ das Kalenderjahr ab heute; `periodCount` 2 deckt dieses und nächstes Jahr ab, als Filter-Chip gibt es das noch nicht.
 

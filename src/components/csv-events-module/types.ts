@@ -67,6 +67,9 @@ export interface EventSettingsValue {
   printDescription?: string;
   printMonthHeadings?: string;
   printLinkUrl?: string;
+  printLogo?: string;
+  printSiteTitle?: string;
+  printTableHeader?: string;
 }
 
 export interface CsvEventsModuleAttrs extends InternalAttrs {

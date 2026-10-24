@@ -234,11 +234,11 @@
   }
 
   function renderMeta(e, d) {
-    const parts = [];
+    let html = '';
     const t = d.time ? formatTime(e) : '';
-    if (t) parts.push(esc(t));
-    if (d.location && e.location) parts.push(renderLocation(e));
-    return parts.join(' &middot; ');
+    if (t) html += '<span class="dcsve_csv_events__meta-time">' + esc(t) + '</span>';
+    if (d.location && e.location) html += '<span class="dcsve_csv_events__meta-loc">' + renderLocation(e) + '</span>';
+    return html;
   }
 
   function renderLink(e, d) {
@@ -363,18 +363,17 @@
     for (let i = 0; i < events.length; i++) {
       const e = events[i], badge = badgeParts(e);
       html += '<div class="dcsve_csv_events__slider-card">';
-      html += '<div class="dcsve_csv_events__slider-top">';
       html += '<div class="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">';
       html += '<div class="dcsve_csv_events__slider-badge-day dcsve_csv_events__d-day">' + esc(badge[0]) + '</div>';
       html += '<div class="dcsve_csv_events__slider-badge-mon dcsve_csv_events__d-mon">' + esc(badge[1]) + '</div>';
       html += '</div>';
+      html += '<div class="dcsve_csv_events__slider-body">';
       const meta = renderMeta(e, d);
       html += '<div class="dcsve_csv_events__slider-title dcsve_csv_events__el-title">' + esc(e.title) + '</div>';
-      html += '</div>';
       if (meta) html += '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">' + meta + '</div>';
       if (d.description && e.description) html += '<div class="dcsve_csv_events__slider-desc dcsve_csv_events__el-desc">' + esc(e.description) + '</div>';
       if (d.link) html += renderLink(e, d);
-      html += '</div>';
+      html += '</div></div>';
     }
     html += '</div>';
     html += '<button class="dcsve_csv_events__slider-nav dcsve_csv_events__slider-prev" data-slider="' + sliderId + '" aria-label="' + esc(I18N.prev || 'Zurück') + '">&lsaquo;</button>';
@@ -417,6 +416,8 @@
     '@page{size:A4;margin:15mm}',
     'html,body{margin:0;padding:0;background:#fff;color:#000}',
     'body{font:11px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.dcsve-print__logo{display:block;max-height:48px;max-width:220px;width:auto;height:auto;margin:0 0 8px}',
+    '.dcsve-print__site{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}',
     '.dcsve-print__title{font-size:18px;font-weight:700;margin:0 0 2px}',
     '.dcsve-print__meta{font-size:10px;color:#555;margin:0 0 12px}',
     '.dcsve_csv_events{font-size:11px;color:#000}',
@@ -459,7 +460,10 @@
     d.description = on('description', d.description);
     d.monthHeadings = on('monthHeadings', d.monthHeadings);
     d.link = on('linkUrl', false);
+    d.tableHeader = on('tableHeader', d.tableHeader);
     d.linkAsUrl = true;
+    const showLogo = on('logo', true) && !!config.logoUrl;
+    const showSiteTitle = on('siteTitle', true) && !!config.siteTitle;
     const view = config.printView || 'table';
     let body;
     if (!upcoming.length) body = NO_EVENTS;
@@ -471,13 +475,15 @@
     const metaParts = [];
     if (periods[period]) metaParts.push(periods[period]);
     metaParts.push((I18N.printedOn || 'Stand: %s').replace('%s', fmtToday()));
-    const title = config.heading || document.title || '';
+    const title = config.heading || '';
     const stackedClass = d.stacked ? ' dcsve_csv_events--date-stacked' : '';
 
     return '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title>'
       + (stylesheetHref ? '<link rel="stylesheet" href="' + esc(stylesheetHref) + '">' : '')
       + '<style>' + PRINT_CSS + '</style></head><body>'
       + '<div class="dcsve_csv_events dcsve_csv_events--print"><div class="dcsve_csv_events__inner' + stackedClass + '" style="--dcsve-accent:#000">'
+      + (showLogo ? '<img class="dcsve-print__logo" src="' + esc(config.logoUrl) + '" alt="">' : '')
+      + (showSiteTitle ? '<div class="dcsve-print__site">' + esc(config.siteTitle) + '</div>' : '')
       + (title ? '<h1 class="dcsve-print__title">' + esc(title) + '</h1>' : '')
       + '<p class="dcsve-print__meta">' + esc(metaParts.join(' \u00b7 ')) + '</p>'
       + '<div class="dcsve_csv_events__content"><div class="dcsve_csv_events__view" data-view="' + esc(view) + '">' + body + '</div></div>'

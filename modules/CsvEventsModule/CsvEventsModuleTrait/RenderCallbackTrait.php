@@ -236,7 +236,12 @@ trait RenderCallbackTrait {
 				'description'   => self::is_on( $settings['printDescription'] ?? 'on' ),
 				'monthHeadings' => self::is_on( $settings['printMonthHeadings'] ?? 'on' ),
 				'linkUrl'       => self::is_on( $settings['printLinkUrl'] ?? 'off' ),
+				'tableHeader'   => self::is_on( $settings['printTableHeader'] ?? 'on' ),
+				'logo'          => self::is_on( $settings['printLogo'] ?? 'on' ),
+				'siteTitle'     => self::is_on( $settings['printSiteTitle'] ?? 'on' ),
 			],
+			'siteTitle'        => get_bloginfo( 'name' ),
+			'logoUrl'          => self::site_logo_url(),
 			'heading'          => wp_strip_all_tags( (string) ( $attrs['heading']['innerContent']['desktop']['value'] ?? '' ) ),
 		], JSON_HEX_TAG );
 
@@ -637,6 +642,26 @@ trait RenderCallbackTrait {
 		return $classes;
 	}
 
+	/**
+	 * Customizer logo first, Divi theme logo as fallback.
+	 */
+	private static function site_logo_url(): string {
+		$logo_id = (int) get_theme_mod( 'custom_logo' );
+		if ( $logo_id ) {
+			$url = wp_get_attachment_image_url( $logo_id, 'full' );
+			if ( $url ) {
+				return $url;
+			}
+		}
+		if ( function_exists( 'et_get_option' ) ) {
+			$divi_logo = (string) et_get_option( 'divi_logo', '' );
+			if ( '' !== $divi_logo ) {
+				return $divi_logo;
+			}
+		}
+		return '';
+	}
+
 	private static function pin_svg(): string {
 		return '<svg class="dcsve_csv_events__pin" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
 	}
@@ -649,18 +674,18 @@ trait RenderCallbackTrait {
 	}
 
 	/**
-	 * "17:00 Uhr · <pin> Ort" for cards and slider, respecting the display flags.
+	 * Time and location as separate lines for cards and slider, respecting the display flags.
 	 */
 	private static function render_meta( array $e, array $d ): string {
-		$parts = [];
-		$time  = $d['time'] ? self::format_time( $e ) : '';
+		$html = '';
+		$time = $d['time'] ? self::format_time( $e ) : '';
 		if ( '' !== $time ) {
-			$parts[] = esc_html( $time );
+			$html .= '<span class="dcsve_csv_events__meta-time">' . esc_html( $time ) . '</span>';
 		}
 		if ( $d['location'] && '' !== $e['location'] ) {
-			$parts[] = self::render_location( $e );
+			$html .= '<span class="dcsve_csv_events__meta-loc">' . self::render_location( $e ) . '</span>';
 		}
-		return implode( ' &middot; ', $parts );
+		return $html;
 	}
 
 	private static function render_link( array $e, string $label ): string {
@@ -709,13 +734,12 @@ trait RenderCallbackTrait {
 			[ $day, $mon ] = self::badge_parts( $e, $ctx['months_short'] );
 
 			$html .= '<div class="dcsve_csv_events__slider-card" data-date="' . esc_attr( $e['date'] ) . '">';
-			$html .= '<div class="dcsve_csv_events__slider-top">';
 			$html .= '<div class="dcsve_csv_events__slider-badge dcsve_csv_events__el-date">';
 			$html .= '<div class="dcsve_csv_events__slider-badge-day dcsve_csv_events__d-day">' . esc_html( $day ) . '</div>';
 			$html .= '<div class="dcsve_csv_events__slider-badge-mon dcsve_csv_events__d-mon">' . esc_html( $mon ) . '</div>';
 			$html .= '</div>';
+			$html .= '<div class="dcsve_csv_events__slider-body">';
 			$html .= '<div class="dcsve_csv_events__slider-title dcsve_csv_events__el-title">' . esc_html( $e['title'] ) . '</div>';
-			$html .= '</div>';
 			$meta = self::render_meta( $e, $d );
 			if ( '' !== $meta ) {
 				$html .= '<div class="dcsve_csv_events__slider-detail dcsve_csv_events__el-meta">' . $meta . '</div>';
@@ -726,7 +750,7 @@ trait RenderCallbackTrait {
 			if ( $d['link'] ) {
 				$html .= self::render_link( $e, $d['linkLabel'] );
 			}
-			$html .= '</div>';
+			$html .= '</div></div>';
 		}
 
 		$html .= '</div>';
