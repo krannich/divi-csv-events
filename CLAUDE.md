@@ -8,6 +8,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Der ursprüngliche Shortcode-Prototyp liegt in `reference/vereinskalender.php` (mit `reference/termine.csv`). Er ist vollständig ins Modul überführt und dient nur noch als Nachschlagewerk.
 
+## Zweck und Auslieferung
+
+- Zweck: Termine aus CSV in Divi-5-Seiten anzeigen, entstanden für den Schützenverein Schneverdingen, geplant für den Divi Marketplace (`PROJECT_CONTEXT.md`).
+- Auslieferung: kein Server-Deploy. Release-ZIP aus `npm run zip` als Asset eines GitHub-Release von `krannich/divi-csv-events`; installierte Seiten holen Updates über den plugin-update-checker (`divi-csv-events.php`, Branch `main`, `enableReleaseAssets()`). Ablauf unter „Release (Kurzform)“.
+- Live-Seiten, auf denen das Plugin läuft: offen – bei Dennis nachfragen.
+- Wer: Releases nur nach Freigabe durch Dennis.
+
 ## Kommandos
 
 ```bash
