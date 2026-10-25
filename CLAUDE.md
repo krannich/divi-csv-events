@@ -12,7 +12,7 @@ Der ursprüngliche Shortcode-Prototyp liegt in `reference/vereinskalender.php` (
 
 - Zweck: Termine aus CSV in Divi-5-Seiten anzeigen, entstanden für den Schützenverein Schneverdingen, geplant für den Divi Marketplace (`PROJECT_CONTEXT.md`).
 - Auslieferung: kein Server-Deploy. Release-ZIP aus `npm run zip` als Asset eines GitHub-Release von `krannich/divi-csv-events`; installierte Seiten holen Updates über den plugin-update-checker (`divi-csv-events.php`, Branch `main`, `enableReleaseAssets()`). Ablauf unter „Release (Kurzform)“.
-- Live-Seiten, auf denen das Plugin läuft: offen – bei Dennis nachfragen.
+- Live: auf mehreren Seiten als Testinstallation, keine produktive Zielseite. Neue Versionen erreichen die Seiten über den Update-Checker, sobald ein Release veröffentlicht ist.
 - Wer: Releases nur nach Freigabe durch Dennis.
 
 ## Kommandos
